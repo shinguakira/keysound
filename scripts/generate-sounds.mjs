@@ -154,59 +154,83 @@ function genHHKB() {
 }
 
 // --- Pack: Mechanical Keyboard ---
-// Cherry MX Blue — loud, clicky, two-stage with audible click jacket
-// The "blue switch" sound: sharp click on actuation + bottom out thud
+// Blue switch (Razer Green / Cherry MX Blue) — loud, clicky, two-stage
+// Acoustic profile: click jacket snap at 1200Hz peak, bottom-out at 300-400Hz
+// Total decay ~150ms, two events separated by ~3ms
 
 function genMechanicalKeyboard() {
-  const keydown = generate(0.08, (t) => {
-    // MX Blue has a loud click jacket snap at ~2ms
-    const clickJacket = noise() * 0.7 * (t < 0.003 ? 1 : 0) * decay(t, 200);
-    // Sharp high-frequency click
-    const click = sine(t * 4000) * decay(t, 100) * 0.3 * (t < 0.008 ? 1 : 0.1);
-    // Bottom-out thud comes after the click
-    const bottomOut = sine(t * 250) * decay(t, 25) * 0.5;
-    // Plastic housing rattle
-    const rattle = noise() * decay(t, 50) * 0.2;
-    // Spring ping
-    const spring = sine(t * 1800) * decay(t, 70) * 0.08;
-    return clickJacket + click + bottomOut + rattle + spring;
+  const keydown = generate(0.15, (t) => {
+    // Click jacket snap — 1200Hz fundamental with 800Hz and 2400Hz harmonics
+    const clickTime = t < 0.005; // sharp 5ms transient
+    const click1200 = sine(t * 1200) * decay(t, 30) * 0.4 * (clickTime ? 1 : 0.15);
+    const click800 = sine(t * 800) * decay(t, 35) * 0.2 * (clickTime ? 1 : 0.1);
+    const click2400 = sine(t * 2400) * decay(t, 45) * 0.15 * (clickTime ? 1 : 0.05);
+    // Broadband noise burst with the click
+    const clickNoise = noise() * 0.5 * (t < 0.003 ? 1 : 0) * decay(t, 150);
+    // Bottom-out thud — delayed ~3ms after click, 300-400Hz range
+    const bt = Math.max(0, t - 0.003);
+    const bottomOut = sine(bt * 350) * decay(bt, 20) * 0.45 * (t > 0.003 ? 1 : 0);
+    // Plastic housing resonance
+    const housing = noise() * decay(t, 40) * 0.12;
+    // Spring ping — subtle high metallic ring
+    const spring = sine(t * 3500) * decay(t, 50) * 0.04;
+    return clickNoise + click1200 + click800 + click2400 + bottomOut + housing + spring;
   });
 
-  const space = generate(0.14, (t) => {
-    // Space bar — huge bottom out, stabilizer rattle
-    const clickJacket = noise() * 0.6 * (t < 0.004 ? 1 : 0) * decay(t, 150);
-    const click = sine(t * 3500) * decay(t, 80) * 0.25 * (t < 0.01 ? 1 : 0.1);
-    const bottomOut = sine(t * 160) * decay(t, 14) * 0.6;
-    const rattle = noise() * decay(t, 30) * 0.25;
-    // Loud stabilizer wire
-    const stab = sine(t * 500) * decay(t, 25) * 0.15;
-    const spring = sine(t * 1600) * decay(t, 50) * 0.06;
-    return clickJacket + click + bottomOut + rattle + stab + spring;
+  const space = generate(0.2, (t) => {
+    // Space bar — same click mechanism but bigger bottom-out + stabilizer
+    const clickTime = t < 0.005;
+    const click1200 = sine(t * 1200) * decay(t, 28) * 0.35 * (clickTime ? 1 : 0.12);
+    const click800 = sine(t * 800) * decay(t, 32) * 0.18 * (clickTime ? 1 : 0.08);
+    const click2400 = sine(t * 2400) * decay(t, 40) * 0.12 * (clickTime ? 1 : 0.04);
+    const clickNoise = noise() * 0.45 * (t < 0.004 ? 1 : 0) * decay(t, 120);
+    // Bigger bottom-out — lower pitch, longer decay
+    const bt = Math.max(0, t - 0.003);
+    const bottomOut = sine(bt * 250) * decay(bt, 12) * 0.55 * (t > 0.003 ? 1 : 0);
+    const housing = noise() * decay(t, 25) * 0.15;
+    // Stabilizer wire rattle
+    const stab = sine(t * 600) * decay(t, 20) * 0.1;
+    const spring = sine(t * 3200) * decay(t, 40) * 0.03;
+    return clickNoise + click1200 + click800 + click2400 + bottomOut + housing + stab + spring;
   });
 
-  const enter = generate(0.1, (t) => {
-    const clickJacket = noise() * 0.7 * (t < 0.003 ? 1 : 0) * decay(t, 180);
-    const click = sine(t * 4200) * decay(t, 90) * 0.3 * (t < 0.008 ? 1 : 0.1);
-    const bottomOut = sine(t * 200) * decay(t, 20) * 0.55;
-    const rattle = noise() * decay(t, 40) * 0.22;
-    const stab = sine(t * 550) * decay(t, 30) * 0.12;
-    return clickJacket + click + bottomOut + rattle + stab;
+  const enter = generate(0.18, (t) => {
+    // Enter — slightly louder click, stabilized key
+    const clickTime = t < 0.005;
+    const click1200 = sine(t * 1200) * decay(t, 28) * 0.42 * (clickTime ? 1 : 0.15);
+    const click800 = sine(t * 800) * decay(t, 32) * 0.2 * (clickTime ? 1 : 0.1);
+    const click2400 = sine(t * 2400) * decay(t, 42) * 0.15 * (clickTime ? 1 : 0.05);
+    const clickNoise = noise() * 0.55 * (t < 0.003 ? 1 : 0) * decay(t, 140);
+    const bt = Math.max(0, t - 0.003);
+    const bottomOut = sine(bt * 300) * decay(bt, 16) * 0.5 * (t > 0.003 ? 1 : 0);
+    const housing = noise() * decay(t, 30) * 0.14;
+    const stab = sine(t * 650) * decay(t, 22) * 0.08;
+    return clickNoise + click1200 + click800 + click2400 + bottomOut + housing + stab;
   });
 
-  const modifier = generate(0.06, (t) => {
-    const clickJacket = noise() * 0.5 * (t < 0.003 ? 1 : 0) * decay(t, 180);
-    const click = sine(t * 3800) * decay(t, 100) * 0.2 * (t < 0.006 ? 1 : 0.1);
-    const bottomOut = sine(t * 280) * decay(t, 35) * 0.35;
-    const rattle = noise() * decay(t, 60) * 0.15;
-    return clickJacket + click + bottomOut + rattle;
+  const modifier = generate(0.12, (t) => {
+    // Modifier — lighter press, still clicky
+    const clickTime = t < 0.004;
+    const click1200 = sine(t * 1200) * decay(t, 35) * 0.3 * (clickTime ? 1 : 0.1);
+    const click800 = sine(t * 800) * decay(t, 40) * 0.15 * (clickTime ? 1 : 0.08);
+    const clickNoise = noise() * 0.35 * (t < 0.003 ? 1 : 0) * decay(t, 160);
+    const bt = Math.max(0, t - 0.003);
+    const bottomOut = sine(bt * 380) * decay(bt, 25) * 0.3 * (t > 0.003 ? 1 : 0);
+    const housing = noise() * decay(t, 50) * 0.1;
+    return clickNoise + click1200 + click800 + bottomOut + housing;
   });
 
-  const backspace = generate(0.07, (t) => {
-    const clickJacket = noise() * 0.6 * (t < 0.003 ? 1 : 0) * decay(t, 170);
-    const click = sine(t * 4000) * decay(t, 95) * 0.25 * (t < 0.007 ? 1 : 0.1);
-    const bottomOut = sine(t * 240) * decay(t, 30) * 0.45;
-    const rattle = noise() * decay(t, 55) * 0.18;
-    return clickJacket + click + bottomOut + rattle;
+  const backspace = generate(0.14, (t) => {
+    // Backspace — normal clicky key
+    const clickTime = t < 0.005;
+    const click1200 = sine(t * 1200) * decay(t, 30) * 0.38 * (clickTime ? 1 : 0.13);
+    const click800 = sine(t * 800) * decay(t, 35) * 0.18 * (clickTime ? 1 : 0.09);
+    const click2400 = sine(t * 2400) * decay(t, 45) * 0.12 * (clickTime ? 1 : 0.04);
+    const clickNoise = noise() * 0.45 * (t < 0.003 ? 1 : 0) * decay(t, 140);
+    const bt = Math.max(0, t - 0.003);
+    const bottomOut = sine(bt * 340) * decay(bt, 22) * 0.4 * (t > 0.003 ? 1 : 0);
+    const housing = noise() * decay(t, 45) * 0.11;
+    return clickNoise + click1200 + click800 + click2400 + bottomOut + housing;
   });
 
   return {
@@ -379,53 +403,42 @@ function genMinimal() {
 // Should feel like hearing rain on a window or puddle
 
 function genRaindrop() {
-  const keydown = generate(0.1, (t) => {
-    // Soft impact — filtered noise, not a sine tone
-    const impact = noise() * decay(t, 60) * 0.35 * (t < 0.008 ? 1 : 0.15);
-    // Water body resonance — very low, muted
-    const water = sine(t * 80) * decay(t, 20) * 0.2;
-    // Gentle ripple — randomized slightly
-    const ripple = sine(t * (200 + noise() * 30)) * decay(t, 35) * 0.08;
-    return impact + water + ripple;
+  // Water droplet style — pitch rises as ripple spreads, with soft noise impact
+  const keydown = generate(0.06, (t) => {
+    const freq = 800 + t * 3000;
+    return sine(t * freq) * decay(t, 45) * 0.4;
   });
 
-  const space = generate(0.16, (t) => {
-    // Bigger raindrop on puddle — more splash
-    const impact = noise() * decay(t, 40) * 0.3 * (t < 0.012 ? 1 : 0.2);
-    const water = sine(t * 60) * decay(t, 12) * 0.3;
-    const splash = noise() * decay(t, 25) * 0.1;
-    const ripple = sine(t * 150) * decay(t, 18) * 0.1;
-    return impact + water + splash + ripple;
+  const space = generate(0.1, (t) => {
+    // Bigger drop — lower start pitch, longer decay
+    const freq = 500 + t * 2000;
+    return sine(t * freq) * decay(t, 25) * 0.5;
   });
 
-  const enter = generate(0.22, (t) => {
-    // Heavy drop into puddle — impact + spreading ripples
-    const impact = noise() * decay(t, 30) * 0.35 * (t < 0.015 ? 1 : 0.15);
-    const water = sine(t * 50) * decay(t, 9) * 0.3;
-    const splash = noise() * decay(t, 18) * 0.12;
-    const ripple1 = sine(t * 120) * decay(t, 14) * 0.1;
-    const ripple2 = sine(t * 180) * decay(t, 20) * 0.05;
-    return impact + water + splash + ripple1 + ripple2;
+  const enter = generate(0.1, (t) => {
+    // Double drip
+    const drop1 = sine(t * (700 + t * 3000)) * decay(t, 35) * 0.4;
+    const drop2 = t > 0.04 ? sine((t - 0.04) * (600 + (t - 0.04) * 2500)) * decay(t - 0.04, 40) * 0.3 : 0;
+    return drop1 + drop2;
   });
 
-  const modifier = generate(0.06, (t) => {
-    // Tiny mist drop
-    const impact = noise() * decay(t, 80) * 0.2 * (t < 0.005 ? 1 : 0.1);
-    const water = sine(t * 100) * decay(t, 35) * 0.12;
-    return impact + water;
+  const modifier = generate(0.04, (t) => {
+    // Small, quick drip
+    const freq = 900 + t * 4000;
+    return sine(t * freq) * decay(t, 60) * 0.3;
   });
 
   const backspace = generate(0.06, (t) => {
-    // Drip falling upward feel — pitch goes up slightly
+    // Same water droplet character
     const freq = 800 + t * 3000;
     return sine(t * freq) * decay(t, 45) * 0.4;
   });
 
   return {
-    "keydown.wav": Array.from(lowpass(Array.from(keydown), 3000)),
-    "keydown-space.wav": Array.from(lowpass(Array.from(space), 2500)),
-    "keydown-enter.wav": Array.from(lowpass(Array.from(enter), 2500)),
-    "keydown-modifier.wav": Array.from(lowpass(Array.from(modifier), 3000)),
+    "keydown.wav": Array.from(lowpass(Array.from(keydown), 5000)),
+    "keydown-space.wav": Array.from(lowpass(Array.from(space), 4000)),
+    "keydown-enter.wav": Array.from(lowpass(Array.from(enter), 5000)),
+    "keydown-modifier.wav": Array.from(lowpass(Array.from(modifier), 5000)),
     "keydown-backspace.wav": Array.from(lowpass(Array.from(backspace), 5000)),
   };
 }
