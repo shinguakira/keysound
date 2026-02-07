@@ -26,7 +26,17 @@
       "Bash(node:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "WebFetch(domain:sveltejs.github.io)",
+      "WebFetch(domain:github.com)",
+      "Bash(npx eslint:*)",
+      "Bash(npx oxfmt:*)",
+      "Bash(cargo fmt:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run tauri:build:*)",
+      "Bash(tasklist:*)",
+      "Bash(cmd //c \"taskkill /IM keysound.exe /F\")"
     ]
   }
 }
