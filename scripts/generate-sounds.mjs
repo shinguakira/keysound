@@ -153,11 +153,11 @@ function genHHKB() {
   };
 }
 
-// --- Pack: Gaming Keyboard ---
+// --- Pack: Mechanical Keyboard ---
 // Cherry MX Blue — loud, clicky, two-stage with audible click jacket
 // The "blue switch" sound: sharp click on actuation + bottom out thud
 
-function genGamingKeyboard() {
+function genMechanicalKeyboard() {
   const keydown = generate(0.08, (t) => {
     // MX Blue has a loud click jacket snap at ~2ms
     const clickJacket = noise() * 0.7 * (t < 0.003 ? 1 : 0) * decay(t, 200);
@@ -582,8 +582,8 @@ console.log("Generating sound packs...\n");
 console.log("[default] HHKB");
 savePack("default", genHHKB());
 
-console.log("\n[gaming] Gaming Keyboard");
-savePack("gaming", genGamingKeyboard());
+console.log("\n[gaming] Mechanical Keyboard");
+savePack("gaming", genMechanicalKeyboard());
 
 console.log("\n[typewriter] Typewriter");
 savePack("typewriter", genTypewriter());
