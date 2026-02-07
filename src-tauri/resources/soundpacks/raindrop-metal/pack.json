@@ -1,0 +1,29 @@
+{
+  "id": "raindrop-metal",
+  "name": "Raindrop on Metal",
+  "author": "KeySound",
+  "version": "1.0.0",
+  "description": "Rain hitting a tin roof \u2014 sharp, ringy, resonant",
+
+  "defaults": {
+    "keydown": "sounds/keydown.wav",
+    "volume": 0.8
+  },
+
+  "key_overrides": {
+    "Space": { "keydown": "sounds/keydown-space.wav", "volume": 1.0 },
+    "Return": { "keydown": "sounds/keydown-enter.wav", "volume": 1.0 }
+  },
+
+  "category_overrides": {
+    "modifiers": {
+      "keys": ["ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "Alt", "AltGr", "MetaLeft", "MetaRight"],
+      "keydown": "sounds/keydown-modifier.wav",
+      "volume": 0.6
+    },
+    "delete": {
+      "keys": ["Backspace", "Delete"],
+      "keydown": "sounds/keydown-backspace.wav"
+    }
+  }
+}

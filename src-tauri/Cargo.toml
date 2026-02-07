@@ -1,0 +1,25 @@
+[package]
+name = "keysound"
+version = "0.1.0"
+description = "Keyboard Sound App"
+authors = ["you"]
+edition = "2021"
+
+[lib]
+name = "keysound_lib"
+crate-type = ["staticlib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
+tauri-plugin-store = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rdev = "0.5"
+kira = { version = "0.10", features = ["mp3", "ogg", "wav"] }
+log = "0.4"

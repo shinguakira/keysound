@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where:*)",
+      "Bash(rustc:*)",
+      "Bash(cargo --version:*)",
+      "Bash(winget install:*)",
+      "Bash(export PATH=\"$PATH:/c/Users/user2/.cargo/bin\")",
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tauri build:*)",
+      "Bash(rustup target add:*)",
+      "Bash(rustup toolchain install:*)",
+      "Bash(winget search:*)",
+      "Bash(export PATH=\"/c/Users/user2/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/bin:$PATH:/c/Users/user2/.cargo/bin\")",
+      "Bash(cargo build:*)",
+      "Bash(rustup show:*)",
+      "Bash(npm run check:*)",
+      "Bash(npm run tauri:*)",
+      "Bash(timeout 60 npm run tauri:dev:*)",
+      "Bash(cargo check:*)",
+      "Bash(echo:*)",
+      "Bash(powershell:*)",
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(dir:*)",
+      "Bash(node:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)"
+    ]
+  }
+}
