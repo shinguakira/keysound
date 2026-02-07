@@ -1,7 +1,6 @@
 use kira::{
-    AudioManager, AudioManagerSettings, DefaultBackend,
-    sound::static_sound::StaticSoundData,
-    Decibels,
+    sound::static_sound::StaticSoundData, AudioManager, AudioManagerSettings, Decibels,
+    DefaultBackend,
 };
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};

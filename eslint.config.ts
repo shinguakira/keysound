@@ -8,12 +8,7 @@ import svelteConfig from "./svelte.config.js";
 export default ts.config(
   // Ignore build artifacts and dependencies
   {
-    ignores: [
-      "build/",
-      ".svelte-kit/",
-      "node_modules/",
-      "src-tauri/",
-    ],
+    ignores: ["build/", ".svelte-kit/", "node_modules/", "src-tauri/"],
   },
 
   js.configs.recommended,

@@ -278,11 +278,7 @@ function genBubble() {
   const enter = generate(0.12, (t) => {
     const pop1 = sine(t * (1000 - t * 5000)) * decay(t, 35) * 0.5;
     const pop2 =
-      t > 0.04
-        ? sine((t - 0.04) * (600 - (t - 0.04) * 3000)) *
-          decay(t - 0.04, 40) *
-          0.4
-        : 0;
+      t > 0.04 ? sine((t - 0.04) * (600 - (t - 0.04) * 3000)) * decay(t - 0.04, 40) * 0.4 : 0;
     return pop1 + pop2;
   });
 
@@ -348,33 +344,24 @@ function genLaser() {
 // --- Pack: Minimal Tap ---
 
 function genMinimal() {
-  const keydown = lowpass(
-    Array.from(generate(0.02, (t) => noise() * decay(t, 150) * 0.35)),
-    4000
-  );
+  const keydown = lowpass(Array.from(generate(0.02, (t) => noise() * decay(t, 150) * 0.35)), 4000);
 
-  const space = lowpass(
-    Array.from(generate(0.03, (t) => noise() * decay(t, 100) * 0.4)),
-    3000
-  );
+  const space = lowpass(Array.from(generate(0.03, (t) => noise() * decay(t, 100) * 0.4)), 3000);
 
   const enter = lowpass(
     Array.from(
       generate(0.035, (t) => {
         return (noise() * 0.6 + sine(t * 400) * 0.4) * decay(t, 100) * 0.4;
-      })
+      }),
     ),
-    3500
+    3500,
   );
 
-  const modifier = lowpass(
-    Array.from(generate(0.015, (t) => noise() * decay(t, 200) * 0.2)),
-    3000
-  );
+  const modifier = lowpass(Array.from(generate(0.015, (t) => noise() * decay(t, 200) * 0.2)), 3000);
 
   const backspace = lowpass(
     Array.from(generate(0.025, (t) => noise() * decay(t, 120) * 0.3)),
-    3500
+    3500,
   );
 
   return {
@@ -546,7 +533,8 @@ function genCat() {
     // Envelope with dip between syllables
     let env;
     if (t < 0.1) env = Math.min(t * 150, 1) * decay(t, 8);
-    else if (t < 0.14) env = 0.15; // brief dip
+    else if (t < 0.14)
+      env = 0.15; // brief dip
     else env = 0.8 * decay(t - 0.14, 8);
     return (voice + harm + breath) * env;
   });

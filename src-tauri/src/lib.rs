@@ -71,7 +71,9 @@ fn get_active_pack_id(state: State<AppState>) -> Result<Option<String>, String> 
 // --- Tray Setup ---
 
 fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
-    let toggle = MenuItemBuilder::new("Toggle Sound").id("toggle").build(app)?;
+    let toggle = MenuItemBuilder::new("Toggle Sound")
+        .id("toggle")
+        .build(app)?;
     let show = MenuItemBuilder::new("Settings").id("show").build(app)?;
     let quit = MenuItemBuilder::new("Quit").id("quit").build(app)?;
 
@@ -223,10 +225,7 @@ pub fn run() {
 }
 
 /// Recursively copy a directory
-fn copy_dir_recursive(
-    src: &std::path::Path,
-    dst: &std::path::Path,
-) -> Result<(), std::io::Error> {
+fn copy_dir_recursive(src: &std::path::Path, dst: &std::path::Path) -> Result<(), std::io::Error> {
     if !dst.exists() {
         std::fs::create_dir_all(dst)?;
     }

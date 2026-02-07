@@ -77,23 +77,23 @@ npx tauri build --target x86_64-pc-windows-gnu    # build + bundle
 
 Output:
 
-| File | Location |
-|---|---|
-| Portable exe | `src-tauri/target/x86_64-pc-windows-gnu/release/keysound.exe` |
+| File           | Location                                                                          |
+| -------------- | --------------------------------------------------------------------------------- |
+| Portable exe   | `src-tauri/target/x86_64-pc-windows-gnu/release/keysound.exe`                     |
 | NSIS installer | `src-tauri/target/x86_64-pc-windows-gnu/release/bundle/nsis/KeySound_*-setup.exe` |
-| MSI installer | `src-tauri/target/x86_64-pc-windows-gnu/release/bundle/msi/KeySound_*.msi` |
+| MSI installer  | `src-tauri/target/x86_64-pc-windows-gnu/release/bundle/msi/KeySound_*.msi`        |
 
 ## Useful Commands
 
-| Command | What it does |
-|---|---|
-| `npx tauri dev` | Dev mode with hot reload |
-| `npx tauri build --target x86_64-pc-windows-gnu` | Production build |
-| `cargo check --target x86_64-pc-windows-gnu` | Type-check Rust only (fast) |
+| Command                                                | What it does                    |
+| ------------------------------------------------------ | ------------------------------- |
+| `npx tauri dev`                                        | Dev mode with hot reload        |
+| `npx tauri build --target x86_64-pc-windows-gnu`       | Production build                |
+| `cargo check --target x86_64-pc-windows-gnu`           | Type-check Rust only (fast)     |
 | `cargo build --target x86_64-pc-windows-gnu --release` | Compile Rust only (no bundling) |
-| `cargo clean` | Delete all build artifacts |
-| `rustc --version` | Check Rust compiler version |
-| `rustup show` | Show active toolchain |
+| `cargo clean`                                          | Delete all build artifacts      |
+| `rustc --version`                                      | Check Rust compiler version     |
+| `rustup show`                                          | Show active toolchain           |
 
 > First build is slow (~2-5 min) because it compiles all dependencies. After that, incremental builds take ~5-15 seconds.
 
@@ -158,15 +158,15 @@ Key names use rdev format: `KeyA`, `Space`, `Return`, `ShiftLeft`, `F1`, etc.
 
 ## Rust vs Node Cheat Sheet
 
-| Node/TS | Rust |
-|---|---|
-| `node` | No runtime — compiles to native `.exe` |
-| `npm` | `cargo` |
-| `package.json` | `Cargo.toml` |
-| `node_modules/` | `~/.cargo/registry/` (global cache) |
-| `npm install` | Automatic on `cargo build` |
-| `tsc --noEmit` | `cargo check` |
-| `npm run build` | `cargo build --release` |
+| Node/TS         | Rust                                   |
+| --------------- | -------------------------------------- |
+| `node`          | No runtime — compiles to native `.exe` |
+| `npm`           | `cargo`                                |
+| `package.json`  | `Cargo.toml`                           |
+| `node_modules/` | `~/.cargo/registry/` (global cache)    |
+| `npm install`   | Automatic on `cargo build`             |
+| `tsc --noEmit`  | `cargo check`                          |
+| `npm run build` | `cargo build --release`                |
 
 ## IDE Setup
 
