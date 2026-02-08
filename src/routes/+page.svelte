@@ -112,6 +112,9 @@
 
     <footer>
       <p class="hint">Close this window to minimize to tray</p>
+      <p class="credits">
+        Sound effects: <a href="https://soundeffect-lab.info/" target="_blank" rel="noopener">効果音ラボ</a>
+      </p>
     </footer>
   {/if}
 </main>
@@ -300,5 +303,20 @@
   .hint {
     color: #555;
     font-size: 0.8em;
+  }
+
+  .credits {
+    color: #555;
+    font-size: 0.75em;
+    margin-top: 4px;
+  }
+
+  .credits a {
+    color: #53c0f0;
+    text-decoration: none;
+  }
+
+  .credits a:hover {
+    text-decoration: underline;
   }
 </style>
