@@ -45,6 +45,20 @@
     }
   }
 
+  const DOM_TO_RDEV: Record<string, string> = {
+    Enter: "Return",
+    NumpadEnter: "Return",
+  };
+
+  function domKeyToRdev(code: string): string {
+    return DOM_TO_RDEV[code] ?? code;
+  }
+
+  function handleTestKeydown(e: KeyboardEvent) {
+    const key = domKeyToRdev(e.code);
+    invoke("play_sound", { key }).catch(() => {});
+  }
+
   async function handlePackSelect(packId: string) {
     try {
       await invoke("set_active_pack", { packId });
@@ -63,6 +77,15 @@
       <h1>KeySound</h1>
       <p class="subtitle">Keyboard Sound Effects</p>
     </header>
+
+    <section class="test-section">
+      <input
+        type="text"
+        class="test-input"
+        placeholder="Type here to test sounds..."
+        onkeydown={handleTestKeydown}
+      />
+    </section>
 
     <section class="control-section">
       <div class="control-row">
@@ -173,6 +196,32 @@
     font-weight: 600;
     color: #ccc;
     margin: 0 0 12px;
+  }
+
+  .test-section {
+    margin-bottom: 16px;
+  }
+
+  .test-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: #16213e;
+    border: 2px solid #1a1a3e;
+    border-radius: 10px;
+    color: #e0e0e0;
+    font-family: inherit;
+    font-size: 0.95em;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+  }
+
+  .test-input::placeholder {
+    color: #555;
+  }
+
+  .test-input:focus {
+    border-color: #53c0f0;
   }
 
   .control-section {

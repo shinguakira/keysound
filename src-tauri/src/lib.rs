@@ -68,6 +68,13 @@ fn get_active_pack_id(state: State<AppState>) -> Result<Option<String>, String> 
     Ok(engine.active_pack_id())
 }
 
+#[tauri::command]
+fn play_sound(key: String, state: State<AppState>) -> Result<(), String> {
+    let mut engine = state.engine.lock().map_err(|e| e.to_string())?;
+    engine.play_key(&key);
+    Ok(())
+}
+
 // --- Tray Setup ---
 
 fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
@@ -145,6 +152,7 @@ pub fn run() {
             toggle_sound,
             get_enabled,
             get_active_pack_id,
+            play_sound,
         ])
         .setup(|app| {
             // Determine soundpacks directory
