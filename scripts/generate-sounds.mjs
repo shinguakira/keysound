@@ -245,11 +245,7 @@ function genMechanicalKeyboard() {
 // --- Pack: Typewriter ---
 
 function genTypewriter() {
-  const keydown = generate(0.08, (t) => {
-    const thud = noise() * decay(t, 35) * 0.6;
-    const resonance = sine(t * 80) * decay(t, 25) * 0.4;
-    return thud + resonance;
-  });
+  // keydown uses real mp3 sample (タイプライターで文字を打つ1.mp3)
 
   const space = generate(0.12, (t) => {
     const bar = noise() * decay(t, 20) * 0.5;
@@ -275,7 +271,6 @@ function genTypewriter() {
   });
 
   return {
-    "keydown.wav": Array.from(keydown),
     "keydown-space.wav": Array.from(space),
     "keydown-enter.wav": Array.from(enter),
     "keydown-modifier.wav": Array.from(modifier),
@@ -507,74 +502,251 @@ function genRaindropMetal() {
   };
 }
 
-// --- Pack: Cat ---
-// Cute cat sounds — meows, purrs, chirps
+// --- Pack: Cat --- uses real mp3 samples from C:\Users\user2\Music\SE
 
-function genCat() {
-  // Short chirp/mew — quick frequency wobble like a cat chirp
-  const keydown = generate(0.1, (t) => {
-    // Cat chirp = two-tone wobble
-    const freq = 700 + Math.sin(t * 40) * 200;
-    const voice = sine(t * freq) * 0.4;
-    // Breathy noise (cat breath)
-    const breath = noise() * 0.05 * decay(t, 20);
-    // Envelope: quick attack, medium decay
-    const env = Math.min(t * 300, 1) * decay(t, 18);
-    return (voice + breath) * env;
+// --- Pack: Piano ---
+// Piano key strike — hammer hitting string, warm resonance, sustain tail
+
+function genPiano() {
+  const keydown = generate(0.15, (t) => {
+    // Hammer impact transient
+    const hammer = noise() * decay(t, 200) * 0.3 * (t < 0.003 ? 1 : 0);
+    // Fundamental + harmonics (C5 ~523Hz)
+    const f1 = sine(t * 523) * decay(t, 10) * 0.5;
+    const f2 = sine(t * 1046) * decay(t, 14) * 0.2;
+    const f3 = sine(t * 1569) * decay(t, 18) * 0.1;
+    return hammer + f1 + f2 + f3;
   });
 
-  const space = generate(0.2, (t) => {
-    // Longer "mew" — pitch slides up then down
-    const pitch = 600 + 300 * Math.sin(t * 8) * decay(t, 5);
-    const voice = sine(t * pitch) * 0.45;
-    const breath = noise() * 0.06 * decay(t, 15);
-    const env = Math.min(t * 200, 1) * decay(t, 10);
-    return (voice + breath) * env;
+  const space = generate(0.25, (t) => {
+    // Deep chord — C3 ~131Hz, lower and richer
+    const hammer = noise() * decay(t, 180) * 0.25 * (t < 0.004 ? 1 : 0);
+    const f1 = sine(t * 131) * decay(t, 6) * 0.55;
+    const f2 = sine(t * 262) * decay(t, 8) * 0.3;
+    const f3 = sine(t * 393) * decay(t, 10) * 0.15;
+    const f4 = sine(t * 524) * decay(t, 12) * 0.08;
+    return hammer + f1 + f2 + f3 + f4;
   });
 
   const enter = generate(0.3, (t) => {
-    // Full "meow" — two syllables
-    const isSecondSyllable = t > 0.12;
-    const localT = isSecondSyllable ? t - 0.12 : t;
-    const basePitch = isSecondSyllable ? 550 : 700;
-    const vibrato = Math.sin(t * 35) * 80;
-    const pitch = basePitch + vibrato + (isSecondSyllable ? -localT * 400 : localT * 200);
-    const voice = sine(t * pitch) * 0.5;
-    // Harmonic richness
-    const harm = sine(t * pitch * 2) * 0.12;
-    const breath = noise() * 0.07;
-    // Envelope with dip between syllables
-    let env;
-    if (t < 0.1) env = Math.min(t * 150, 1) * decay(t, 8);
-    else if (t < 0.14)
-      env = 0.15; // brief dip
-    else env = 0.8 * decay(t - 0.14, 8);
-    return (voice + harm + breath) * env;
+    // Dramatic chord — two notes (C4+E4)
+    const hammer = noise() * decay(t, 150) * 0.3 * (t < 0.004 ? 1 : 0);
+    const c4 = sine(t * 262) * decay(t, 6) * 0.4;
+    const e4 = sine(t * 330) * decay(t, 6) * 0.35;
+    const c5 = sine(t * 524) * decay(t, 8) * 0.15;
+    const e5 = sine(t * 660) * decay(t, 9) * 0.1;
+    return hammer + c4 + e4 + c5 + e5;
   });
 
-  const modifier = generate(0.06, (t) => {
-    // Quick purr/trill
-    const trill = sine(t * (500 + Math.sin(t * 80) * 150)) * 0.3;
-    const env = Math.min(t * 400, 1) * decay(t, 30);
-    return trill * env;
+  const modifier = generate(0.1, (t) => {
+    // Quick staccato note — higher pitch
+    const hammer = noise() * decay(t, 250) * 0.2 * (t < 0.002 ? 1 : 0);
+    const f1 = sine(t * 784) * decay(t, 18) * 0.35;
+    const f2 = sine(t * 1568) * decay(t, 22) * 0.12;
+    return hammer + f1 + f2;
   });
 
-  const backspace = generate(0.08, (t) => {
-    // Hiss — breathy noise with a bit of tone
-    const hiss = noise() * 0.3;
-    const tone = sine(t * 900) * 0.1;
-    const env = Math.min(t * 300, 1) * decay(t, 25);
-    return (hiss + tone) * env;
+  const backspace = generate(0.12, (t) => {
+    // Slightly lower staccato
+    const hammer = noise() * decay(t, 220) * 0.25 * (t < 0.003 ? 1 : 0);
+    const f1 = sine(t * 440) * decay(t, 15) * 0.4;
+    const f2 = sine(t * 880) * decay(t, 18) * 0.15;
+    return hammer + f1 + f2;
   });
 
   return {
-    "keydown.wav": Array.from(lowpass(Array.from(keydown), 4000)),
-    "keydown-space.wav": Array.from(lowpass(Array.from(space), 3500)),
-    "keydown-enter.wav": Array.from(lowpass(Array.from(enter), 3500)),
-    "keydown-modifier.wav": Array.from(lowpass(Array.from(modifier), 4000)),
-    "keydown-backspace.wav": Array.from(lowpass(Array.from(backspace), 6000)),
+    "keydown.wav": Array.from(keydown),
+    "keydown-space.wav": Array.from(space),
+    "keydown-enter.wav": Array.from(enter),
+    "keydown-modifier.wav": Array.from(modifier),
+    "keydown-backspace.wav": Array.from(backspace),
   };
 }
+
+// --- Pack: Harp ---
+// Harp string pluck — bright attack, shimmering harmonics, gentle decay
+
+function genHarp() {
+  const keydown = generate(0.2, (t) => {
+    // String pluck attack
+    const pluck = noise() * decay(t, 300) * 0.15 * (t < 0.002 ? 1 : 0);
+    // Fundamental D5 ~587Hz — harp is bright
+    const f1 = sine(t * 587) * decay(t, 8) * 0.5;
+    const f2 = sine(t * 1174) * decay(t, 12) * 0.2;
+    const f3 = sine(t * 1761) * decay(t, 16) * 0.08;
+    // Slight shimmer — detuned harmonic
+    const shimmer = sine(t * 590) * decay(t, 9) * 0.1;
+    return pluck + f1 + f2 + f3 + shimmer;
+  });
+
+  const space = generate(0.35, (t) => {
+    // Low glissando feel — sweep through a few notes
+    const base = 262 + Math.sin(t * 4) * 40;
+    const f1 = sine(t * base) * decay(t, 4) * 0.5;
+    const f2 = sine(t * base * 2) * decay(t, 6) * 0.2;
+    const shimmer = sine(t * (base + 3)) * decay(t, 5) * 0.15;
+    return f1 + f2 + shimmer;
+  });
+
+  const enter = generate(0.3, (t) => {
+    // Arpeggio — three notes in quick succession
+    const n1 = sine(t * 523) * decay(t, 5) * 0.4;
+    const n2 = t > 0.06 ? sine((t - 0.06) * 659) * decay(t - 0.06, 5) * 0.35 : 0;
+    const n3 = t > 0.12 ? sine((t - 0.12) * 784) * decay(t - 0.12, 6) * 0.3 : 0;
+    return n1 + n2 + n3;
+  });
+
+  const modifier = generate(0.12, (t) => {
+    // Light high pluck
+    const f1 = sine(t * 880) * decay(t, 14) * 0.35;
+    const f2 = sine(t * 1760) * decay(t, 18) * 0.1;
+    return f1 + f2;
+  });
+
+  const backspace = generate(0.15, (t) => {
+    // Muted string — damped quickly
+    const f1 = sine(t * 494) * decay(t, 20) * 0.4;
+    const f2 = sine(t * 988) * decay(t, 25) * 0.12;
+    return f1 + f2;
+  });
+
+  return {
+    "keydown.wav": Array.from(keydown),
+    "keydown-space.wav": Array.from(space),
+    "keydown-enter.wav": Array.from(enter),
+    "keydown-modifier.wav": Array.from(modifier),
+    "keydown-backspace.wav": Array.from(backspace),
+  };
+}
+
+// --- Pack: Gunshot --- uses real mp3 samples from C:\Users\user2\Music\SE
+// --- Pack: Katana Slash --- uses real mp3 samples from C:\Users\user2\Music\SE
+
+// --- Pack: Drum ---
+// Drum kit — snare, kick, hi-hat, toms
+
+function genDrum() {
+  const keydown = generate(0.1, (t) => {
+    // Snare — noise burst + low body
+    const snap = noise() * decay(t, 30) * 0.5 * (t < 0.005 ? 1 : 0.6);
+    const body = sine(t * 200) * decay(t, 25) * 0.4;
+    // Snare wire buzz
+    const wire = noise() * decay(t, 18) * 0.15;
+    return snap + body + wire;
+  });
+
+  const space = generate(0.15, (t) => {
+    // Kick drum — deep thump
+    const attack = noise() * decay(t, 120) * 0.3 * (t < 0.004 ? 1 : 0.1);
+    // Pitch drops rapidly (beater impact)
+    const freq = 120 * Math.exp(-t * 30) + 50;
+    const body = sine(t * freq) * decay(t, 10) * 0.7;
+    return attack + body;
+  });
+
+  const enter = generate(0.15, (t) => {
+    // Crash cymbal
+    const attack = noise() * (t < 0.005 ? 0.7 : 0.4) * decay(t, 6);
+    const shimmer = sine(t * 4000) * decay(t, 10) * 0.15;
+    const shimmer2 = sine(t * 5500) * decay(t, 12) * 0.08;
+    const body = sine(t * 300) * decay(t, 8) * 0.2;
+    return attack + shimmer + shimmer2 + body;
+  });
+
+  const modifier = generate(0.04, (t) => {
+    // Hi-hat (closed) — short, crisp
+    const hit = noise() * decay(t, 80) * 0.4;
+    const ring = sine(t * 6000) * decay(t, 100) * 0.1;
+    return hit + ring;
+  });
+
+  const backspace = generate(0.08, (t) => {
+    // Rim shot — sharp crack
+    const crack = noise() * decay(t, 60) * 0.5 * (t < 0.003 ? 1 : 0.3);
+    const ring = sine(t * 800) * decay(t, 30) * 0.3;
+    return crack + ring;
+  });
+
+  return {
+    "keydown.wav": Array.from(keydown),
+    "keydown-space.wav": Array.from(lowpass(Array.from(space), 3000)),
+    "keydown-enter.wav": Array.from(enter),
+    "keydown-modifier.wav": Array.from(modifier),
+    "keydown-backspace.wav": Array.from(backspace),
+  };
+}
+
+// --- Pack: Fist Blow --- uses real mp3 samples from C:\Users\user2\Music\SE
+
+// --- Pack: Violin ---
+// Bowed string — warm, expressive, with vibrato
+
+function genViolin() {
+  const keydown = generate(0.15, (t) => {
+    // Bow attack — slight scratch
+    const bow = noise() * decay(t, 80) * 0.12 * (t < 0.01 ? 1 : 0.2);
+    // A4 440Hz with vibrato
+    const vibrato = Math.sin(t * 35) * 8;
+    const f1 = sine(t * (440 + vibrato)) * 0.45;
+    const f2 = sine(t * (880 + vibrato * 2)) * 0.15;
+    const f3 = sine(t * (1320 + vibrato * 3)) * 0.06;
+    // Envelope: smooth attack and release
+    const env = Math.min(t * 80, 1) * decay(t, 10);
+    return bow + (f1 + f2 + f3) * env;
+  });
+
+  const space = generate(0.3, (t) => {
+    // Low sustained note — G3 196Hz, richer
+    const bow = noise() * decay(t, 60) * 0.1 * (t < 0.015 ? 1 : 0.15);
+    const vibrato = Math.sin(t * 30) * 5;
+    const f1 = sine(t * (196 + vibrato)) * 0.5;
+    const f2 = sine(t * (392 + vibrato * 2)) * 0.2;
+    const f3 = sine(t * (588 + vibrato * 3)) * 0.1;
+    const f4 = sine(t * (784 + vibrato * 4)) * 0.05;
+    const env = Math.min(t * 50, 1) * decay(t, 5);
+    return bow + (f1 + f2 + f3 + f4) * env;
+  });
+
+  const enter = generate(0.25, (t) => {
+    // Double stop — two notes (A4 + E5)
+    const bow = noise() * decay(t, 70) * 0.15 * (t < 0.012 ? 1 : 0.2);
+    const vibrato = Math.sin(t * 32) * 6;
+    const a4 = sine(t * (440 + vibrato)) * 0.35;
+    const e5 = sine(t * (659 + vibrato * 1.5)) * 0.3;
+    const a4h = sine(t * (880 + vibrato * 2)) * 0.1;
+    const env = Math.min(t * 60, 1) * decay(t, 6);
+    return bow + (a4 + e5 + a4h) * env;
+  });
+
+  const modifier = generate(0.08, (t) => {
+    // Pizzicato — plucked string
+    const pluck = noise() * decay(t, 200) * 0.15 * (t < 0.002 ? 1 : 0);
+    const f1 = sine(t * 660) * decay(t, 18) * 0.45;
+    const f2 = sine(t * 1320) * decay(t, 22) * 0.12;
+    return pluck + f1 + f2;
+  });
+
+  const backspace = generate(0.1, (t) => {
+    // Short detached note
+    const bow = noise() * decay(t, 100) * 0.1 * (t < 0.008 ? 1 : 0.15);
+    const vibrato = Math.sin(t * 40) * 5;
+    const f1 = sine(t * (523 + vibrato)) * 0.4;
+    const f2 = sine(t * (1046 + vibrato * 2)) * 0.12;
+    const env = Math.min(t * 100, 1) * decay(t, 16);
+    return bow + (f1 + f2) * env;
+  });
+
+  return {
+    "keydown.wav": Array.from(keydown),
+    "keydown-space.wav": Array.from(space),
+    "keydown-enter.wav": Array.from(enter),
+    "keydown-modifier.wav": Array.from(modifier),
+    "keydown-backspace.wav": Array.from(backspace),
+  };
+}
+
+// --- Pack: Taiko --- uses real mp3 samples from C:\Users\user2\Music\SE
+// --- Pack: Mokugyo --- uses real mp3 samples from C:\Users\user2\Music\SE
 
 // --- Main ---
 
@@ -604,7 +776,26 @@ savePack("raindrop", genRaindrop());
 console.log("\n[raindrop-metal] Raindrop on Metal");
 savePack("raindrop-metal", genRaindropMetal());
 
-console.log("\n[cat] Cat");
-savePack("cat", genCat());
+// cat — uses real mp3 samples, skip synthesis
+
+console.log("\n[piano] Piano");
+savePack("piano", genPiano());
+
+console.log("\n[harp] Harp");
+savePack("harp", genHarp());
+
+// gunshot — uses real mp3 samples, skip synthesis
+// katana  — uses real mp3 samples, skip synthesis
+
+console.log("\n[drum] Drum Kit");
+savePack("drum", genDrum());
+
+// fist — uses real mp3 samples, skip synthesis
+
+console.log("\n[violin] Violin");
+savePack("violin", genViolin());
+
+// taiko   — uses real mp3 samples, skip synthesis
+// mokugyo — uses real mp3 samples, skip synthesis
 
 console.log("\nDone! All sound packs generated.");

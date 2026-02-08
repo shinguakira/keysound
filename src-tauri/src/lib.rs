@@ -154,20 +154,18 @@ pub fn run() {
                 .expect("Failed to get app data dir");
             let soundpacks_dir = app_data_dir.join("soundpacks");
 
-            // Copy bundled sound packs if the directory doesn't exist yet
-            if !soundpacks_dir.exists() {
-                std::fs::create_dir_all(&soundpacks_dir).ok();
+            // Always sync bundled sound packs to app data dir on launch
+            // This ensures new/updated packs from builds are picked up
+            std::fs::create_dir_all(&soundpacks_dir).ok();
 
-                // Copy from bundled resources
-                let resource_dir = app
-                    .path()
-                    .resource_dir()
-                    .expect("Failed to get resource dir");
-                let bundled_packs = resource_dir.join("resources").join("soundpacks");
+            let resource_dir = app
+                .path()
+                .resource_dir()
+                .expect("Failed to get resource dir");
+            let bundled_packs = resource_dir.join("resources").join("soundpacks");
 
-                if bundled_packs.exists() {
-                    copy_dir_recursive(&bundled_packs, &soundpacks_dir).ok();
-                }
+            if bundled_packs.exists() {
+                copy_dir_recursive(&bundled_packs, &soundpacks_dir).ok();
             }
 
             // Initialize sound engine

@@ -36,7 +36,11 @@
       "Bash(npm run build:*)",
       "Bash(npm run tauri:build:*)",
       "Bash(tasklist:*)",
-      "Bash(cmd //c \"taskkill /IM keysound.exe /F\")"
+      "Bash(cmd //c \"taskkill /IM keysound.exe /F\")",
+      "Bash(ls:*)",
+      "Bash(du:*)",
+      "Bash(cmd //c \"wmic process where \"\"name=''keysound.exe''\"\" get Name,ProcessId,WorkingSetSize,VirtualSize,PageFileUsage,PeakWorkingSetSize /format:list\")",
+      "Bash(winget list:*)"
     ]
   }
 }

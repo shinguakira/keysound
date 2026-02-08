@@ -6,7 +6,7 @@
   "description": "Classic typewriter with carriage bell on Enter",
 
   "defaults": {
-    "keydown": "sounds/keydown.wav",
+    "keydown": "sounds/keydown.mp3",
     "volume": 0.8
   },
 

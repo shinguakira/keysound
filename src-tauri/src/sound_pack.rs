@@ -156,5 +156,14 @@ pub fn discover_packs(dir: &Path) -> Vec<SoundPack> {
         }
     }
 
+    packs.sort_by(|a, b| {
+        // "default" pack always comes first, then alphabetical by id
+        match (a.id.as_str(), b.id.as_str()) {
+            ("default", "default") => std::cmp::Ordering::Equal,
+            ("default", _) => std::cmp::Ordering::Less,
+            (_, "default") => std::cmp::Ordering::Greater,
+            _ => a.id.cmp(&b.id),
+        }
+    });
     packs
 }

@@ -6,13 +6,13 @@
   "description": "Cute meows, chirps, and purrs",
 
   "defaults": {
-    "keydown": "sounds/keydown.wav",
+    "keydown": "sounds/keydown.mp3",
     "volume": 0.8
   },
 
   "key_overrides": {
-    "Space": { "keydown": "sounds/keydown-space.wav", "volume": 1.0 },
-    "Return": { "keydown": "sounds/keydown-enter.wav", "volume": 1.0 }
+    "Space": { "keydown": "sounds/keydown-space.mp3", "volume": 1.0 },
+    "Return": { "keydown": "sounds/keydown-enter.mp3", "volume": 1.0 }
   },
 
   "category_overrides": {
@@ -27,12 +27,12 @@
         "MetaLeft",
         "MetaRight"
       ],
-      "keydown": "sounds/keydown-modifier.wav",
+      "keydown": "sounds/keydown-modifier.mp3",
       "volume": 0.6
     },
     "delete": {
       "keys": ["Backspace", "Delete"],
-      "keydown": "sounds/keydown-backspace.wav"
+      "keydown": "sounds/keydown-backspace.mp3"
     }
   }
 }
