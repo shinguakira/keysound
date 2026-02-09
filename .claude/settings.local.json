@@ -42,7 +42,15 @@
       "Bash(cmd //c \"wmic process where \"\"name=''keysound.exe''\"\" get Name,ProcessId,WorkingSetSize,VirtualSize,PageFileUsage,PeakWorkingSetSize /format:list\")",
       "Bash(winget list:*)",
       "Bash(find:*)",
-      "Bash(for d in \"e:/workspace/keysound/src-tauri/resources/soundpacks\"/*/)"
+      "Bash(for d in \"e:/workspace/keysound/src-tauri/resources/soundpacks\"/*/)",
+      "Bash(npm run lint:fix:*)",
+      "Bash(npm run format:*)",
+      "Bash(cmd //c \"echo %PATH%\")",
+      "Bash(tr:*)",
+      "Bash(cmd //c \"setx PATH \"\"%USERPROFILE%\\\\.cargo\\\\bin;%PATH%\"\"\")",
+      "Bash(npm config:*)",
+      "Bash(cmd //c \"where cargo\")",
+      "Bash(npm run lint:*)"
     ]
   }
 }

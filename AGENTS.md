@@ -20,13 +20,13 @@ scripts/                  # Build helpers (TypeScript via tsx)
 
 ## Commands
 
-| Task | Command |
-|------|---------|
-| Dev | `npm run tauri:dev` |
-| Build | `npm run tauri:build` |
-| Lint | `npm run lint` |
-| Lint fix | `npm run lint:fix` |
-| Format | `npm run format` |
+| Task         | Command                |
+| ------------ | ---------------------- |
+| Dev          | `npm run tauri:dev`    |
+| Build        | `npm run tauri:build`  |
+| Lint         | `npm run lint`         |
+| Lint fix     | `npm run lint:fix`     |
+| Format       | `npm run format`       |
 | Format check | `npm run format:check` |
 
 ## Lint & Format Rules
