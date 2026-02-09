@@ -283,10 +283,6 @@ function genTypewriter() {
 function genBubble() {
   // Pop = sine sweep from high to low
   const keydown = generate(0.06, (t) => {
-    const freq = 800 - t * 8000; // sweep down
-    let phase = 0;
-    const dt = 1 / SAMPLE_RATE;
-    // Recalculate with proper phase integration
     return sine(t * (800 - t * 4000)) * decay(t, 50) * 0.6;
   });
 
@@ -413,7 +409,8 @@ function genRaindrop() {
   const enter = generate(0.1, (t) => {
     // Double drip
     const drop1 = sine(t * (700 + t * 3000)) * decay(t, 35) * 0.4;
-    const drop2 = t > 0.04 ? sine((t - 0.04) * (600 + (t - 0.04) * 2500)) * decay(t - 0.04, 40) * 0.3 : 0;
+    const drop2 =
+      t > 0.04 ? sine((t - 0.04) * (600 + (t - 0.04) * 2500)) * decay(t - 0.04, 40) * 0.3 : 0;
     return drop1 + drop2;
   });
 

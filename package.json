@@ -13,10 +13,10 @@
     "tauri": "tsx scripts/run-tauri.ts",
     "tauri:dev": "tsx scripts/run-tauri.ts dev",
     "tauri:build": "tsx scripts/run-tauri.ts build --target x86_64-pc-windows-gnu",
-    "lint": "eslint . && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings",
+    "lint": "eslint . && node scripts/with-path.mjs cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings",
     "lint:fix": "eslint . --fix",
-    "format": "oxfmt --write . && cargo fmt --manifest-path src-tauri/Cargo.toml",
-    "format:check": "oxfmt --check . && cargo fmt --manifest-path src-tauri/Cargo.toml --check"
+    "format": "oxfmt --write . && node scripts/with-path.mjs cargo fmt --manifest-path src-tauri/Cargo.toml",
+    "format:check": "oxfmt --check . && node scripts/with-path.mjs cargo fmt --manifest-path src-tauri/Cargo.toml --check"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

@@ -18,8 +18,14 @@
   "category_overrides": {
     "modifiers": {
       "keys": [
-        "ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight",
-        "Alt", "AltGr", "MetaLeft", "MetaRight"
+        "ShiftLeft",
+        "ShiftRight",
+        "ControlLeft",
+        "ControlRight",
+        "Alt",
+        "AltGr",
+        "MetaLeft",
+        "MetaRight"
       ],
       "keydown": "sounds/keydown-modifier.mp3",
       "volume": 0.6

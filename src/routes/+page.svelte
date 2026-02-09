@@ -118,7 +118,7 @@
         <p class="no-packs">No sound packs found</p>
       {:else}
         <div class="pack-list">
-          {#each packs as pack}
+          {#each packs as pack (pack.id)}
             <button
               class="pack-card"
               class:selected={activePackId === pack.id}

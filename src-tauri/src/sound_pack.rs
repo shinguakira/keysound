@@ -90,7 +90,7 @@ impl SoundPack {
         }
 
         // 2. Check category overrides
-        for (_cat_name, cat) in &self.category_overrides {
+        for cat in self.category_overrides.values() {
             if cat.keys.iter().any(|k| k == key_name) {
                 if let Some(ref path) = cat.keydown {
                     return Some(self.base_path.join(path));
@@ -112,7 +112,7 @@ impl SoundPack {
         }
 
         // 2. Check category overrides
-        for (_cat_name, cat) in &self.category_overrides {
+        for cat in self.category_overrides.values() {
             if cat.keys.iter().any(|k| k == key_name) {
                 if let Some(vol) = cat.volume {
                     return vol;
