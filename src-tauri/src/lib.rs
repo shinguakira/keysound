@@ -3,7 +3,7 @@ mod sound_engine;
 mod sound_pack;
 
 use sound_engine::SoundEngine;
-use sound_pack::{discover_packs, SoundPackInfo};
+use sound_pack::{discover_packs, SoundPack, SoundPackInfo};
 use std::sync::Mutex;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
@@ -20,19 +20,15 @@ pub struct AppState {
 // --- Tauri Commands ---
 
 #[tauri::command]
-fn get_sound_packs(state: State<AppState>) -> Vec<SoundPackInfo> {
+async fn get_sound_packs(state: State<'_, AppState>) -> Result<Vec<SoundPackInfo>, String> {
     let packs = discover_packs(&state.soundpacks_dir);
-    packs.iter().map(|p| p.info()).collect()
+    Ok(packs.iter().map(|p| p.info()).collect())
 }
 
 #[tauri::command]
-fn set_active_pack(pack_id: String, state: State<AppState>) -> Result<(), String> {
-    let packs = discover_packs(&state.soundpacks_dir);
-    let pack = packs
-        .into_iter()
-        .find(|p| p.id == pack_id)
-        .ok_or_else(|| format!("Sound pack '{}' not found", pack_id))?;
-
+async fn set_active_pack(pack_id: String, state: State<'_, AppState>) -> Result<(), String> {
+    let pack_dir = state.soundpacks_dir.join(&pack_id);
+    let pack = SoundPack::load(&pack_dir)?;
     let mut engine = state.engine.lock().map_err(|e| e.to_string())?;
     engine.load_pack(pack)
 }

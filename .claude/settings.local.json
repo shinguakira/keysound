@@ -40,7 +40,9 @@
       "Bash(ls:*)",
       "Bash(du:*)",
       "Bash(cmd //c \"wmic process where \"\"name=''keysound.exe''\"\" get Name,ProcessId,WorkingSetSize,VirtualSize,PageFileUsage,PeakWorkingSetSize /format:list\")",
-      "Bash(winget list:*)"
+      "Bash(winget list:*)",
+      "Bash(find:*)",
+      "Bash(for d in \"e:/workspace/keysound/src-tauri/resources/soundpacks\"/*/)"
     ]
   }
 }

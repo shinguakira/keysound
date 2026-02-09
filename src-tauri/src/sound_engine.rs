@@ -79,15 +79,37 @@ impl SoundEngine {
         paths_to_load.sort();
         paths_to_load.dedup();
 
-        // Pre-load all sounds
-        for path in &paths_to_load {
-            if !path.exists() {
-                log::warn!("Sound file not found: {}", path.display());
-                continue;
-            }
-            match StaticSoundData::from_file(path) {
+        // Pre-load all sounds in parallel (disk I/O + audio decode)
+        let paths_to_load: Vec<PathBuf> = paths_to_load
+            .into_iter()
+            .filter(|p| {
+                if !p.exists() {
+                    log::warn!("Sound file not found: {}", p.display());
+                    false
+                } else {
+                    true
+                }
+            })
+            .collect();
+
+        let results: Vec<_> = std::thread::scope(|s| {
+            let handles: Vec<_> = paths_to_load
+                .iter()
+                .map(|path| {
+                    let path = path.clone();
+                    s.spawn(move || {
+                        let result = StaticSoundData::from_file(&path);
+                        (path, result)
+                    })
+                })
+                .collect();
+            handles.into_iter().map(|h| h.join().unwrap()).collect()
+        });
+
+        for (path, result) in results {
+            match result {
                 Ok(data) => {
-                    self.sounds.insert(path.clone(), data);
+                    self.sounds.insert(path, data);
                 }
                 Err(e) => {
                     log::warn!("Failed to load sound {}: {}", path.display(), e);
