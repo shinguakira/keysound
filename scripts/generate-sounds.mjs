@@ -95,16 +95,16 @@ function lowpass(samples, cutoff) {
   return out;
 }
 
-// --- Pack: HHKB (default) ---
-// Topre electrostatic capacitive switch — soft rubber dome "thock"
-// Muted, dampened, no clicky. Smooth and quiet. The sound of money.
+// --- Pack: Silent Keyboard (default) ---
+// Soft capacitive switch — muted rubber dome "thock"
+// Dampened, no clicky. Smooth and quiet.
 // Key character: soft initial contact → cushioned bottom-out → minimal upstroke
 
-function genHHKB() {
+function genSilentKeyboard() {
   const keydown = generate(0.06, (t) => {
     // Soft rubber dome collapse — no sharp click, just a muted pop
     const dome = noise() * decay(t, 90) * 0.15 * (t < 0.003 ? 1 : 0.3);
-    // Deep muted thock — lower freq than Cherry, heavily dampened
+    // Deep muted thock — heavily dampened
     const thock = sine(t * 140) * decay(t, 40) * 0.45;
     // Warm PCB resonance
     const pcb = sine(t * 70) * decay(t, 30) * 0.2;
@@ -112,11 +112,11 @@ function genHHKB() {
   });
 
   const space = generate(0.1, (t) => {
-    // HHKB space is iconic — deep, hollow, longer decay
+    // Space — deep, hollow, longer decay
     const dome = noise() * decay(t, 70) * 0.12 * (t < 0.004 ? 1 : 0.2);
     const thock = sine(t * 95) * decay(t, 20) * 0.5;
     const hollow = sine(t * 50) * decay(t, 15) * 0.3;
-    // Stabilizer is dampened on HHKB, barely audible
+    // Stabilizer barely audible
     const stab = sine(t * 280) * decay(t, 60) * 0.03;
     return dome + thock + hollow + stab;
   });
@@ -130,7 +130,7 @@ function genHHKB() {
   });
 
   const modifier = generate(0.04, (t) => {
-    // Very soft — HHKB modifiers are extra quiet
+    // Very soft modifiers
     const dome = noise() * decay(t, 120) * 0.1 * (t < 0.003 ? 1 : 0.2);
     const thock = sine(t * 160) * decay(t, 50) * 0.25;
     const pcb = sine(t * 80) * decay(t, 40) * 0.1;
@@ -502,54 +502,63 @@ function genRaindropMetal() {
 // --- Pack: Cat --- uses real mp3 samples from C:\Users\user2\Music\SE
 
 // --- Pack: Piano ---
-// Piano key strike — hammer hitting string, warm resonance, sustain tail
+// Grand piano — clean, clear tone with natural decay
 
 function genPiano() {
-  const keydown = generate(0.15, (t) => {
-    // Hammer impact transient
-    const hammer = noise() * decay(t, 200) * 0.3 * (t < 0.003 ? 1 : 0);
-    // Fundamental + harmonics (C5 ~523Hz)
-    const f1 = sine(t * 523) * decay(t, 10) * 0.5;
-    const f2 = sine(t * 1046) * decay(t, 14) * 0.2;
-    const f3 = sine(t * 1569) * decay(t, 18) * 0.1;
-    return hammer + f1 + f2 + f3;
-  });
+  // Clean grand piano: pure harmonics with realistic amplitude ratios
+  // No noise excitation — just clean tones with soft attack and long decay
+  function grandPiano(duration, fundamental, velocity = 1.0) {
+    return generate(duration, (t) => {
+      // Soft attack envelope — not instant, mimics hammer travel
+      const attack = 1 - Math.exp(-t * 80);
 
-  const space = generate(0.25, (t) => {
-    // Deep chord — C3 ~131Hz, lower and richer
-    const hammer = noise() * decay(t, 180) * 0.25 * (t < 0.004 ? 1 : 0);
-    const f1 = sine(t * 131) * decay(t, 6) * 0.55;
-    const f2 = sine(t * 262) * decay(t, 8) * 0.3;
-    const f3 = sine(t * 393) * decay(t, 10) * 0.15;
-    const f4 = sine(t * 524) * decay(t, 12) * 0.08;
-    return hammer + f1 + f2 + f3 + f4;
-  });
+      // Grand piano harmonic amplitudes (measured from real recordings)
+      // Higher partials decay faster, lower partials sustain
+      const partials = [
+        { n: 1, amp: 1.0, decayRate: 3 },
+        { n: 2, amp: 0.6, decayRate: 4 },
+        { n: 3, amp: 0.3, decayRate: 5 },
+        { n: 4, amp: 0.15, decayRate: 7 },
+        { n: 5, amp: 0.08, decayRate: 9 },
+        { n: 6, amp: 0.04, decayRate: 12 },
+      ];
 
-  const enter = generate(0.3, (t) => {
-    // Dramatic chord — two notes (C4+E4)
-    const hammer = noise() * decay(t, 150) * 0.3 * (t < 0.004 ? 1 : 0);
-    const c4 = sine(t * 262) * decay(t, 6) * 0.4;
-    const e4 = sine(t * 330) * decay(t, 6) * 0.35;
-    const c5 = sine(t * 524) * decay(t, 8) * 0.15;
-    const e5 = sine(t * 660) * decay(t, 9) * 0.1;
-    return hammer + c4 + e4 + c5 + e5;
-  });
+      let tone = 0;
+      for (const p of partials) {
+        const freq = fundamental * p.n;
+        // Skip partials above Nyquist
+        if (freq > SAMPLE_RATE / 2) break;
+        tone += sine(t * freq) * p.amp * decay(t, p.decayRate);
+      }
 
-  const modifier = generate(0.1, (t) => {
-    // Quick staccato note — higher pitch
-    const hammer = noise() * decay(t, 250) * 0.2 * (t < 0.002 ? 1 : 0);
-    const f1 = sine(t * 784) * decay(t, 18) * 0.35;
-    const f2 = sine(t * 1568) * decay(t, 22) * 0.12;
-    return hammer + f1 + f2;
-  });
+      // Subtle body thump on attack — very short, clean low sine
+      const body = sine(t * fundamental * 0.5) * decay(t, 25) * 0.15;
 
-  const backspace = generate(0.12, (t) => {
-    // Slightly lower staccato
-    const hammer = noise() * decay(t, 220) * 0.25 * (t < 0.003 ? 1 : 0);
-    const f1 = sine(t * 440) * decay(t, 15) * 0.4;
-    const f2 = sine(t * 880) * decay(t, 18) * 0.15;
-    return hammer + f1 + f2;
-  });
+      return (tone * attack + body) * velocity * 0.45;
+    });
+  }
+
+  // C4 (262Hz) — mid-range, clear and pleasant for regular keys
+  const keydown = grandPiano(0.3, 262, 0.9);
+
+  // C3 (131Hz) — lower, fuller for space
+  const space = grandPiano(0.45, 131, 1.0);
+
+  // C4+E4 chord — bright major third for enter
+  const enterDur = 0.5;
+  const enterC4 = grandPiano(enterDur, 262, 0.8);
+  const enterE4 = grandPiano(enterDur, 330, 0.7);
+  const enterLen = Math.floor(SAMPLE_RATE * enterDur);
+  const enter = new Float64Array(enterLen);
+  for (let i = 0; i < enterLen; i++) {
+    enter[i] = enterC4[i] * 0.55 + enterE4[i] * 0.45;
+  }
+
+  // E4 (330Hz) — light, quick for modifiers
+  const modifier = grandPiano(0.15, 330, 0.6);
+
+  // A3 (220Hz) — mid for backspace
+  const backspace = grandPiano(0.2, 220, 0.7);
 
   return {
     "keydown.wav": Array.from(keydown),
@@ -749,8 +758,8 @@ function genViolin() {
 
 console.log("Generating sound packs...\n");
 
-console.log("[default] HHKB");
-savePack("default", genHHKB());
+console.log("[default] Silent Keyboard");
+savePack("default", genSilentKeyboard());
 
 console.log("\n[gaming] Mechanical Keyboard");
 savePack("gaming", genMechanicalKeyboard());

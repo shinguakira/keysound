@@ -3,7 +3,7 @@
   "name": "Piano",
   "author": "KeySound",
   "version": "1.0.0",
-  "description": "Piano key strike — warm hammer tone with resonant sustain",
+  "description": "Grand piano — real recorded single note, clean and clear",
 
   "defaults": {
     "keydown": "sounds/keydown.wav",

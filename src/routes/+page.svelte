@@ -139,6 +139,10 @@
         Sound effects: <a href="https://soundeffect-lab.info/" target="_blank" rel="noopener">効果音ラボ</a>
       </p>
     </footer>
+
+    <button class="go-top" onclick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+      Top
+    </button>
   {/if}
 </main>
 
@@ -367,5 +371,27 @@
 
   .credits a:hover {
     text-decoration: underline;
+  }
+
+  .go-top {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    padding: 6px 14px;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    color: #888;
+    font-size: 0.8em;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 100;
+  }
+
+  .go-top:hover {
+    background: #fff;
+    color: #555;
+    border-color: #999;
   }
 </style>

@@ -1,9 +1,9 @@
 {
   "id": "default",
-  "name": "HHKB",
+  "name": "Silent Keyboard",
   "author": "KeySound",
   "version": "1.0.0",
-  "description": "Topre electrostatic capacitive — muted, smooth thock",
+  "description": "Muted, smooth thock — soft capacitive key feel",
 
   "defaults": {
     "keydown": "sounds/keydown.wav",

@@ -50,7 +50,16 @@
       "Bash(cmd //c \"setx PATH \"\"%USERPROFILE%\\\\.cargo\\\\bin;%PATH%\"\"\")",
       "Bash(npm config:*)",
       "Bash(cmd //c \"where cargo\")",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "WebFetch(domain:pixabay.com)",
+      "WebFetch(domain:mixkit.co)",
+      "WebFetch(domain:www.fiftysounds.com)",
+      "WebFetch(domain:freesound.org)",
+      "WebFetch(domain:soundeffect-lab.info)",
+      "Bash(curl:*)",
+      "WebFetch(domain:otologic.jp)",
+      "Bash(npm ls:*)",
+      "Bash(npm search:*)"
     ]
   }
 }
