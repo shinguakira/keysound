@@ -16,16 +16,20 @@
     "lint": "eslint . && node scripts/with-path.mjs cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings",
     "lint:fix": "eslint . --fix",
     "format": "oxfmt --write . && node scripts/with-path.mjs cargo fmt --manifest-path src-tauri/Cargo.toml",
-    "format:check": "oxfmt --check . && node scripts/with-path.mjs cargo fmt --manifest-path src-tauri/Cargo.toml --check"
+    "format:check": "oxfmt --check . && node scripts/with-path.mjs cargo fmt --manifest-path src-tauri/Cargo.toml --check",
+    "test:rust": "scripts\\rust-test.bat",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-autostart": "^2.5.1",
+    "@tauri-apps/plugin-dialog": "^2.6.0",
     "@tauri-apps/plugin-opener": "^2",
     "@tauri-apps/plugin-store": "^2.4.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@playwright/test": "^1.58.2",
     "@sveltejs/adapter-static": "^3.0.6",
     "@sveltejs/kit": "^2.9.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",

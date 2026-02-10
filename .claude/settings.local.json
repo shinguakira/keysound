@@ -59,7 +59,24 @@
       "Bash(curl:*)",
       "WebFetch(domain:otologic.jp)",
       "Bash(npm ls:*)",
-      "Bash(npm search:*)"
+      "Bash(npm search:*)",
+      "Bash(npx svelte-check)",
+      "Bash(cargo test:*)",
+      "Bash(ldd:*)",
+      "Bash(ntldd:*)",
+      "Bash(export PATH=\"/e/workspace/keysound/src-tauri/target/debug/build/webview2-com-sys-3590e2d7a509ad0f/out/x64:/c/Users/user2/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/bin:$PATH:/c/Users/user2/.cargo/bin\")",
+      "Bash(export PATH:*)",
+      "Bash(./keysound_lib-171b24997425162b.exe:*)",
+      "Bash(/e/workspace/keysound/src-tauri/target/debug/deps/keysound_lib-171b24997425162b.exe:*)",
+      "Bash(code --list-extensions:*)",
+      "Bash(npx playwright test:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(rustup toolchain list:*)",
+      "Bash(rustup run stable-x86_64-pc-windows-msvc rustc:*)",
+      "Read(//c/Program Files/**)",
+      "Bash(cmd //c:*)",
+      "Read(//c/Program Files \\(x86\\)/Microsoft Visual Studio/2022/BuildTools/VC/Auxiliary/Build/**)",
+      "Read(//c/Users/user2/.rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/x86_64-pc-windows-msvc/lib//**)"
     ]
   }
 }

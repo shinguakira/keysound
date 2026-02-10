@@ -13,6 +13,10 @@ pub struct SoundPack {
     #[serde(default)]
     pub description: String,
 
+    /// "user" for user-created packs, None for bundled
+    #[serde(default)]
+    pub source: Option<String>,
+
     pub defaults: SoundDefaults,
 
     #[serde(default)]
@@ -20,6 +24,10 @@ pub struct SoundPack {
 
     #[serde(default)]
     pub category_overrides: HashMap<String, CategoryOverride>,
+
+    /// Maps slot name -> original file name (for display in UI)
+    #[serde(default)]
+    pub original_names: HashMap<String, String>,
 
     /// Base directory of the sound pack (not serialized from JSON)
     #[serde(skip)]
@@ -60,6 +68,8 @@ pub struct SoundPackInfo {
     pub name: String,
     pub author: String,
     pub description: String,
+    /// "user" for user-created packs, None for bundled
+    pub source: Option<String>,
 }
 
 impl SoundPack {
@@ -130,6 +140,7 @@ impl SoundPack {
             name: self.name.clone(),
             author: self.author.clone(),
             description: self.description.clone(),
+            source: self.source.clone(),
         }
     }
 }
@@ -166,4 +177,171 @@ pub fn discover_packs(dir: &Path) -> Vec<SoundPack> {
         }
     });
     packs
+}
+
+/// Discover packs from both bundled and user directories.
+/// Ordering: default first, then user/custom packs (alphabetical), then other bundled (alphabetical).
+pub fn discover_all_packs(bundled_dir: &Path, user_dir: &Path) -> Vec<SoundPack> {
+    let bundled = discover_packs(bundled_dir);
+    let user = discover_packs(user_dir);
+
+    let mut all = Vec::with_capacity(bundled.len() + user.len());
+
+    // Default pack first (from bundled)
+    for pack in &bundled {
+        if pack.id == "default" {
+            all.push(pack.clone());
+        }
+    }
+
+    // Then user/custom packs (alphabetical, already sorted)
+    all.extend(user);
+
+    // Then other bundled packs (alphabetical, already sorted)
+    for pack in &bundled {
+        if pack.id != "default" {
+            all.push(pack.clone());
+        }
+    }
+
+    all
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::TempDir;
+
+    fn create_pack(dir: &Path, id: &str, source: Option<&str>) {
+        let pack_dir = dir.join(id);
+        fs::create_dir_all(pack_dir.join("sounds")).unwrap();
+        // Write minimal silence wav
+        fs::write(pack_dir.join("sounds").join("keydown.wav"), b"RIFF fake").unwrap();
+
+        let mut manifest = serde_json::json!({
+            "id": id,
+            "name": id,
+            "defaults": { "keydown": "sounds/keydown.wav" }
+        });
+        if let Some(s) = source {
+            manifest["source"] = serde_json::json!(s);
+        }
+        fs::write(pack_dir.join("pack.json"), serde_json::to_string(&manifest).unwrap()).unwrap();
+    }
+
+    #[test]
+    fn test_discover_packs_empty() {
+        let dir = TempDir::new().unwrap();
+        let packs = discover_packs(dir.path());
+        assert!(packs.is_empty());
+    }
+
+    #[test]
+    fn test_discover_packs_nonexistent_dir() {
+        let packs = discover_packs(Path::new("/nonexistent/dir/xxx"));
+        assert!(packs.is_empty());
+    }
+
+    #[test]
+    fn test_discover_packs_default_first() {
+        let dir = TempDir::new().unwrap();
+        create_pack(dir.path(), "zzz", None);
+        create_pack(dir.path(), "default", None);
+        create_pack(dir.path(), "aaa", None);
+
+        let packs = discover_packs(dir.path());
+        assert_eq!(packs.len(), 3);
+        assert_eq!(packs[0].id, "default");
+    }
+
+    #[test]
+    fn test_discover_all_packs_ordering() {
+        let bundled = TempDir::new().unwrap();
+        let user = TempDir::new().unwrap();
+
+        create_pack(bundled.path(), "default", None);
+        create_pack(bundled.path(), "alpha", None);
+        create_pack(bundled.path(), "beta", None);
+        create_pack(user.path(), "custom-a", Some("user"));
+        create_pack(user.path(), "custom-b", Some("user"));
+
+        let all = discover_all_packs(bundled.path(), user.path());
+
+        assert_eq!(all.len(), 5);
+        // Order: default, custom-a, custom-b, alpha, beta
+        assert_eq!(all[0].id, "default");
+        assert_eq!(all[1].id, "custom-a");
+        assert_eq!(all[2].id, "custom-b");
+        assert_eq!(all[3].id, "alpha");
+        assert_eq!(all[4].id, "beta");
+    }
+
+    #[test]
+    fn test_discover_all_packs_no_user_packs() {
+        let bundled = TempDir::new().unwrap();
+        let user = TempDir::new().unwrap();
+
+        create_pack(bundled.path(), "default", None);
+        create_pack(bundled.path(), "piano", None);
+
+        let all = discover_all_packs(bundled.path(), user.path());
+        assert_eq!(all.len(), 2);
+        assert_eq!(all[0].id, "default");
+        assert_eq!(all[1].id, "piano");
+    }
+
+    #[test]
+    fn test_discover_all_packs_only_user_packs() {
+        let bundled = TempDir::new().unwrap();
+        let user = TempDir::new().unwrap();
+
+        create_pack(user.path(), "my-pack", Some("user"));
+
+        let all = discover_all_packs(bundled.path(), user.path());
+        assert_eq!(all.len(), 1);
+        assert_eq!(all[0].id, "my-pack");
+    }
+
+    #[test]
+    fn test_sound_pack_load_and_info() {
+        let dir = TempDir::new().unwrap();
+        create_pack(dir.path(), "test", Some("user"));
+
+        let pack = SoundPack::load(&dir.path().join("test")).unwrap();
+        assert_eq!(pack.id, "test");
+        assert_eq!(pack.source, Some("user".into()));
+
+        let info = pack.info();
+        assert_eq!(info.id, "test");
+        assert_eq!(info.source, Some("user".into()));
+    }
+
+    #[test]
+    fn test_sound_pack_load_missing() {
+        let dir = TempDir::new().unwrap();
+        let result = SoundPack::load(&dir.path().join("nonexistent"));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_resolve_keydown_default() {
+        let dir = TempDir::new().unwrap();
+        create_pack(dir.path(), "test", None);
+        let pack = SoundPack::load(&dir.path().join("test")).unwrap();
+
+        let path = pack.resolve_keydown("KeyA").unwrap();
+        assert!(path.to_string_lossy().contains("keydown.wav"));
+    }
+
+    #[test]
+    fn test_resolve_volume_default() {
+        let dir = TempDir::new().unwrap();
+        create_pack(dir.path(), "test", None);
+        let pack = SoundPack::load(&dir.path().join("test")).unwrap();
+
+        // default_volume() returns 1.0 (not specified in json, serde default)
+        let vol = pack.resolve_volume("KeyA");
+        assert!((vol - 1.0).abs() < f64::EPSILON);
+    }
 }
