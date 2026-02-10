@@ -92,6 +92,14 @@ fn play_sound(key: String, state: State<AppState>) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+async fn hide_to_tray(app: AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        window.hide().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 // --- Custom Pack Commands ---
 
 #[tauri::command]
@@ -290,6 +298,7 @@ pub fn run() {
             get_enabled,
             get_active_pack_id,
             play_sound,
+            hide_to_tray,
             create_custom_pack,
             import_sound_file,
             remove_sound_slot,
@@ -347,17 +356,6 @@ pub fn run() {
 
             // Setup system tray
             setup_tray(app.handle())?;
-
-            // Intercept window close -> hide instead of quit
-            if let Some(window) = app.get_webview_window("main") {
-                let window_clone = window.clone();
-                window.on_window_event(move |event| {
-                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                        api.prevent_close();
-                        let _ = window_clone.hide();
-                    }
-                });
-            }
 
             // Start keyboard listener and connect to sound engine
             let key_rx = keyboard::start_listener();

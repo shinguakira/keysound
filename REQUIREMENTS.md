@@ -221,7 +221,7 @@ Custom packs show a "Custom" badge in the Sound Packs tab.
 
 - **Build**: `npx tauri build --target x86_64-pc-windows-gnu` (MinGW)
 - **Rust tests**: `npm run test:rust` (42 tests, requires MSVC toolchain)
-- **E2E tests**: `npm run test:e2e` (17 Playwright tests with Tauri IPC mocking)
+- **E2E tests**: `npm run test:e2e` (59 WebdriverIO tests — real app, no mocks)
 - **Lint**: `npm run lint` (ESLint + Clippy)
 - **Format**: `npm run format` (oxfmt + cargo fmt)
 

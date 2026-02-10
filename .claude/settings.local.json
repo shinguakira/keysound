@@ -76,7 +76,17 @@
       "Read(//c/Program Files/**)",
       "Bash(cmd //c:*)",
       "Read(//c/Program Files \\(x86\\)/Microsoft Visual Studio/2022/BuildTools/VC/Auxiliary/Build/**)",
-      "Read(//c/Users/user2/.rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/x86_64-pc-windows-msvc/lib//**)"
+      "Read(//c/Users/user2/.rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/x86_64-pc-windows-msvc/lib//**)",
+      "Bash(cargo install:*)",
+      "Read(//c/Program Files \\(x86\\)/Microsoft/Edge/Application/**)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --version)",
+      "Bash(npm view:*)",
+      "Bash(unzip:*)",
+      "Bash(npm run test:e2e:*)",
+      "Bash(npx svelte-kit sync:*)",
+      "WebFetch(domain:webdriver.io)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(npx wdio:*)"
     ]
   }
 }

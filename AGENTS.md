@@ -28,6 +28,18 @@ scripts/                  # Build helpers (TypeScript via tsx)
 | Lint fix     | `npm run lint:fix`     |
 | Format       | `npm run format`       |
 | Format check | `npm run format:check` |
+| Rust tests   | `npm run test:rust`    |
+| E2E tests    | `npm run test:e2e`     |
+
+## E2E Testing
+
+- **Framework**: WebdriverIO + tauri-driver + msedgedriver (real app, no mocks)
+- **Config**: `wdio.conf.js`
+- **Tests**: `e2e/**/*.spec.js` (59 tests)
+- **Report**: HTML report with screenshots & video → `e2e-report/`
+- **Requires**: Debug binary built first: `npx tauri build --debug --no-bundle --target x86_64-pc-windows-gnu`
+- **Binary path**: `src-tauri/target/x86_64-pc-windows-gnu/debug/keysound.exe`
+- **Connection**: WebdriverIO → tauri-driver (port 4444) → msedgedriver → WebView2
 
 ## Lint & Format Rules
 

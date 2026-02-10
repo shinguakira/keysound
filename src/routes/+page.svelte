@@ -71,6 +71,14 @@
     packs = await invoke<SoundPackInfo[]>("get_sound_packs");
   }
 
+  async function hideToTray() {
+    try {
+      await invoke("hide_to_tray");
+    } catch (e) {
+      console.error("Failed to hide to tray:", e);
+    }
+  }
+
   async function handleToggle() {
     try {
       enabled = await invoke<boolean>("toggle_sound");
@@ -268,6 +276,7 @@
     <header>
       <h1>KeySound</h1>
       <p class="subtitle">Keyboard Sound Effects</p>
+      <button class="tray-btn" onclick={hideToTray}>Minimize to Tray</button>
     </header>
 
     <section class="test-section">
@@ -504,7 +513,7 @@
     {/if}
 
     <footer>
-      <p class="hint">Close this window to minimize to tray</p>
+      <p class="hint">Use "Minimize to Tray" to keep running in background</p>
       <p class="credits">
         Sound effects: <a href="https://soundeffect-lab.info/" target="_blank" rel="noopener">効果音ラボ</a>
       </p>
@@ -563,6 +572,25 @@
     margin: 4px 0 0;
     color: #888;
     font-size: 0.9em;
+  }
+
+  .tray-btn {
+    margin-top: 12px;
+    padding: 6px 16px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: transparent;
+    color: #888;
+    font-size: 0.8em;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tray-btn:hover {
+    background: #0f3460;
+    color: #53c0f0;
+    border-color: #53c0f0;
   }
 
   h3 {
