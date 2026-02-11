@@ -10,6 +10,7 @@ const CARGO_BIN = path.join(os.homedir(), ".cargo", "bin");
 const APP_BINARY = path.resolve("./src-tauri/target/x86_64-pc-windows-gnu/debug/keysound.exe");
 const REPORT_DIR = "./e2e-report";
 const SCREENSHOT_DIR = path.join(REPORT_DIR, "screenshots");
+const APP_DATA_DIR = path.join(os.homedir(), "AppData", "Roaming", "com.keysound.desktop");
 
 let tauriDriver;
 let exit = false;
@@ -65,6 +66,18 @@ export const config = {
           `Build it first with: npx tauri build --debug --no-bundle`,
       );
     }
+
+    // Clean up leftover state from previous runs to ensure deterministic tests
+    const userPacks = path.join(APP_DATA_DIR, "user-soundpacks");
+    if (fs.existsSync(userPacks)) {
+      fs.rmSync(userPacks, { recursive: true, force: true });
+      fs.mkdirSync(userPacks, { recursive: true });
+    }
+    const settings = path.join(APP_DATA_DIR, "settings.json");
+    if (fs.existsSync(settings)) {
+      fs.unlinkSync(settings);
+    }
+
     fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
     reportAggregator = new ReportAggregator({
       outputDir: REPORT_DIR,

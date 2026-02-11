@@ -208,4 +208,153 @@ impl SoundEngine {
         let pack = SoundPack::load(pack_dir)?;
         self.load_pack(pack)
     }
+
+    /// Check if a key is within cooldown period (would be throttled).
+    pub fn is_key_in_cooldown(&self, key_name: &str) -> bool {
+        if let Some(last) = self.last_play.get(key_name) {
+            Instant::now().duration_since(*last).as_millis() < KEY_REPEAT_COOLDOWN_MS
+        } else {
+            false
+        }
+    }
+
+    /// Record a key play timestamp (for testing).
+    #[cfg(test)]
+    fn record_key_play(&mut self, key_name: &str) {
+        self.last_play.insert(key_name.to_string(), Instant::now());
+    }
+
+    /// Record a key play at a specific instant (for testing).
+    #[cfg(test)]
+    fn record_key_play_at(&mut self, key_name: &str, at: Instant) {
+        self.last_play.insert(key_name.to_string(), at);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::thread;
+    use std::time::Duration;
+
+    #[test]
+    fn test_amplitude_to_db_full_volume() {
+        let db = amplitude_to_db(1.0);
+        assert!((db - 0.0).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_amplitude_to_db_half_volume() {
+        let db = amplitude_to_db(0.5);
+        assert!((db - (-6.0206)).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_amplitude_to_db_zero() {
+        assert_eq!(amplitude_to_db(0.0), -100.0);
+    }
+
+    #[test]
+    fn test_amplitude_to_db_negative() {
+        assert_eq!(amplitude_to_db(-0.5), -100.0);
+    }
+
+    #[test]
+    fn test_key_cooldown_constant() {
+        assert_eq!(KEY_REPEAT_COOLDOWN_MS, 80);
+    }
+
+    #[test]
+    fn test_key_not_in_cooldown_initially() {
+        let engine = SoundEngine::new().expect("Failed to create engine");
+        assert!(!engine.is_key_in_cooldown("KeyA"));
+        assert!(!engine.is_key_in_cooldown("Space"));
+    }
+
+    #[test]
+    fn test_key_in_cooldown_after_play() {
+        let mut engine = SoundEngine::new().expect("Failed to create engine");
+        engine.record_key_play("KeyA");
+        assert!(engine.is_key_in_cooldown("KeyA"));
+        assert!(!engine.is_key_in_cooldown("KeyB"));
+    }
+
+    #[test]
+    fn test_key_cooldown_expires() {
+        let mut engine = SoundEngine::new().expect("Failed to create engine");
+        let past = Instant::now() - Duration::from_millis(100);
+        engine.record_key_play_at("KeyA", past);
+        assert!(!engine.is_key_in_cooldown("KeyA"));
+    }
+
+    #[test]
+    fn test_key_cooldown_not_expired() {
+        let mut engine = SoundEngine::new().expect("Failed to create engine");
+        let past = Instant::now() - Duration::from_millis(30);
+        engine.record_key_play_at("KeyA", past);
+        assert!(engine.is_key_in_cooldown("KeyA"));
+    }
+
+    #[test]
+    fn test_key_cooldown_boundary() {
+        let mut engine = SoundEngine::new().expect("Failed to create engine");
+        let past = Instant::now() - Duration::from_millis(80);
+        engine.record_key_play_at("KeyA", past);
+        assert!(!engine.is_key_in_cooldown("KeyA"));
+    }
+
+    #[test]
+    fn test_key_cooldown_independent_keys() {
+        let mut engine = SoundEngine::new().expect("Failed to create engine");
+        engine.record_key_play("KeyA");
+        engine.record_key_play("KeyB");
+        assert!(engine.is_key_in_cooldown("KeyA"));
+        assert!(engine.is_key_in_cooldown("KeyB"));
+        assert!(!engine.is_key_in_cooldown("KeyC"));
+    }
+
+    #[test]
+    fn test_volume_clamp() {
+        let mut engine = SoundEngine::new().expect("Failed to create engine");
+        engine.set_volume(0.5);
+        assert!((engine.get_volume() - 0.5).abs() < 0.001);
+        engine.set_volume(1.5);
+        assert!((engine.get_volume() - 1.0).abs() < 0.001);
+        engine.set_volume(-0.5);
+        assert!((engine.get_volume() - 0.0).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_toggle_sound() {
+        let mut engine = SoundEngine::new().expect("Failed to create engine");
+        assert!(engine.is_enabled());
+        assert!(!engine.toggle());
+        assert!(!engine.is_enabled());
+        assert!(engine.toggle());
+        assert!(engine.is_enabled());
+    }
+
+    #[test]
+    fn test_set_enabled() {
+        let mut engine = SoundEngine::new().expect("Failed to create engine");
+        engine.set_enabled(false);
+        assert!(!engine.is_enabled());
+        engine.set_enabled(true);
+        assert!(engine.is_enabled());
+    }
+
+    #[test]
+    fn test_active_pack_id_none() {
+        let engine = SoundEngine::new().expect("Failed to create engine");
+        assert!(engine.active_pack_id().is_none());
+    }
+
+    #[test]
+    fn test_cooldown_real_wait() {
+        let mut engine = SoundEngine::new().expect("Failed to create engine");
+        engine.record_key_play("KeyA");
+        assert!(engine.is_key_in_cooldown("KeyA"));
+        thread::sleep(Duration::from_millis(90));
+        assert!(!engine.is_key_in_cooldown("KeyA"));
+    }
 }

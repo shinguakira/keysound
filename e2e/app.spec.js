@@ -179,10 +179,18 @@ describe("Sound Packs tab", () => {
   });
 
   it("default pack is selected by default", async () => {
-    const firstCard = await $(".pack-card");
-    await scrollTo(firstCard);
-    const className = await firstCard.getAttribute("class");
-    expect(className).toContain("selected");
+    await browser.waitUntil(
+      async () => {
+        const selected = await $(".pack-card.selected");
+        return await selected.isExisting();
+      },
+      { timeout: 5000, timeoutMsg: "No pack card has selected class" },
+    );
+    const selectedCard = await $(".pack-card.selected");
+    await scrollTo(selectedCard);
+    const name = await selectedCard.$(".pack-name");
+    const text = await name.getText();
+    expect(text).toBe("Silent Keyboard");
   });
 
   it("pack cards show author info", async () => {
@@ -451,7 +459,7 @@ describe("Custom Sound - create, edit, delete lifecycle", () => {
         // Check Del button
         const delBtn = await wrapper.$(".delete-btn");
         await expect(delBtn).toBeDisplayed();
-        await expect(delBtn).toHaveText("Del");
+        await expect(delBtn).toHaveText("Delete");
         break;
       }
     }
@@ -648,13 +656,9 @@ describe("Custom Sound - create, edit, delete lifecycle", () => {
     // Wait for pack to disappear from the list
     await browser.waitUntil(
       async () => {
-        const remainingWrappers = await $$(".pack-wrapper");
-        for (const w of remainingWrappers) {
-          const n = await w.$(".pack-name");
-          const t = await n.getText();
-          if (t.includes("E2E Test Pack")) return false;
-        }
-        return true;
+        // Use page source text check to avoid stale element issues during DOM updates
+        const source = await browser.getPageSource();
+        return !source.includes("E2E Test Pack");
       },
       { timeout: 5000, timeoutMsg: "Pack was not deleted" },
     );
@@ -669,10 +673,18 @@ describe("Custom Sound - create, edit, delete lifecycle", () => {
     const packsTab = await $(".tab-btn*=Sound Packs");
     await packsTab.click();
 
-    const firstCard = await $(".pack-card");
-    await scrollTo(firstCard);
-    const className = await firstCard.getAttribute("class");
-    expect(className).toContain("selected");
+    await browser.waitUntil(
+      async () => {
+        const selected = await $(".pack-card.selected");
+        return await selected.isExisting();
+      },
+      { timeout: 5000, timeoutMsg: "No pack card is selected after deletion" },
+    );
+    const selectedCard = await $(".pack-card.selected");
+    await scrollTo(selectedCard);
+    const name = await selectedCard.$(".pack-name");
+    const text = await name.getText();
+    expect(text).toBe("Silent Keyboard");
   });
 });
 

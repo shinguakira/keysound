@@ -14,6 +14,10 @@ KeySound is a Windows desktop application that plays sound effects on every keyp
 - Keydown events only (no keyup)
 - Works when app window is minimized or hidden
 - Sub-10ms latency from keypress to audio playback
+- Per-key repeat cooldown: 80ms minimum interval between repeated sounds for the same key
+  - Prevents buzzing/crackling when holding a key down
+  - Different keys are independent (pressing A then B rapidly is unaffected)
+  - Cooldown state is cleared when switching sound packs
 
 ### 2. Sound Packs
 
@@ -22,6 +26,11 @@ KeySound is a Windows desktop application that plays sound effects on every keyp
 - Default pack: HHKB (id: `"default"`, always sorted first)
 - Supported audio formats: mp3, wav, ogg
 - Instant pack switching (all sounds pre-loaded into memory on switch)
+- **Piano Real** pack: Salamander Grand Piano V3 (CC BY 3.0, Alexander Holm)
+  - Velocity 8 attack samples, trimmed to 500ms WAV with cosine fade-out
+  - DAW keyboard layout: Z-row = C3-B3, Q-row = C4-B4, I/O/P = C5-E5
+  - 12 unique samples (C, D#, F#, A per octave), keys map to nearest sample
+  - 40 key overrides covering 3 octaves (C3-F5)
 
 ### 3. Sound Resolution (3-Tier Hierarchy)
 
@@ -66,7 +75,9 @@ Volume resolution follows the same 3-tier hierarchy.
 - Optional **per-key sound assignment** for individual keys (e.g., A, B, C, Digit0)
   - Uses slot naming convention `key:{rdev_key_name}` (e.g., `key:KeyA`, `key:Digit0`)
   - Maps directly to `key_overrides` in pack.json
-  - Added via "Press any key..." capture UI in both create and edit forms
+  - Added via clickable **virtual keyboard UI** (5-row QWERTY layout) in both create and edit forms
+  - "Set Sound for Each Key" toggle reveals the keyboard; click a key to assign via file picker, click again to remove
+  - Assigned keys are highlighted in the keyboard UI
   - Keys already covered by category slots (Space, Return) are rejected
   - Sound files stored as `sounds/keydown-key-{KeyName}.{ext}`
   - Per-key overrides take priority over category overrides in sound resolution
@@ -239,7 +250,7 @@ Custom packs show a "Custom" badge in the Sound Packs tab.
 ## Build & Test
 
 - **Build**: `npx tauri build --target x86_64-pc-windows-gnu` (MinGW)
-- **Rust tests**: `npm run test:rust` (42 tests, requires MSVC toolchain)
+- **Rust tests**: `npm run test:rust` (65 tests, requires MSVC toolchain)
 - **E2E tests**: `npm run test:e2e` (59 WebdriverIO tests — real app, no mocks)
 - **Lint**: `npm run lint` (ESLint + Clippy)
 - **Format**: `npm run format` (oxfmt + cargo fmt)
@@ -259,4 +270,6 @@ Custom packs show a "Custom" badge in the Sound Packs tab.
 | Bundled pack count         | 24                             |
 | Custom pack category slots | 5                              |
 | Custom pack per-key slots  | unlimited (optional)           |
+| Key repeat cooldown        | 80ms                           |
+| Piano Real trim duration   | 500ms (fade-out from 250ms)    |
 | Data version               | 1                              |
