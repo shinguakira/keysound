@@ -84,7 +84,7 @@ pub fn get_all_slots(pack: &SoundPack) -> Vec<SlotInfo> {
         ),
     ];
 
-    slots
+    let mut result: Vec<SlotInfo> = slots
         .into_iter()
         .map(|(slot, label, path)| {
             // Use original_names if available, otherwise fall back to internal filename
@@ -111,7 +111,38 @@ pub fn get_all_slots(pack: &SoundPack) -> Vec<SlotInfo> {
                 file_name,
             }
         })
-        .collect()
+        .collect();
+
+    // Append per-key overrides (skip Space/Return — already covered by category slots)
+    let mut per_key: Vec<_> = pack
+        .key_overrides
+        .iter()
+        .filter(|(key, _)| key.as_str() != "Space" && key.as_str() != "Return")
+        .collect();
+    per_key.sort_by_key(|(key, _)| (*key).clone());
+
+    for (key_name, key_sound) in per_key {
+        let slot_id = format!("key:{}", key_name);
+        let file_name = pack
+            .original_names
+            .get(&slot_id)
+            .cloned()
+            .or_else(|| {
+                key_sound.keydown.as_ref().and_then(|p| {
+                    Path::new(p)
+                        .file_name()
+                        .and_then(|f| f.to_str())
+                        .map(|s| s.to_string())
+                })
+            });
+        result.push(SlotInfo {
+            slot: slot_id,
+            label: key_name.clone(),
+            file_name,
+        });
+    }
+
+    result
 }
 
 pub fn get_slot_path(pack: &SoundPack, slot: &str) -> Option<String> {
@@ -133,7 +164,16 @@ pub fn get_slot_path(pack: &SoundPack, slot: &str) -> Option<String> {
             .category_overrides
             .get("delete")
             .and_then(|c| c.keydown.clone()),
-        _ => None,
+        _ => {
+            // Handle per-key slots: "key:KeyA" -> key_overrides["KeyA"]
+            if let Some(key_name) = slot.strip_prefix("key:") {
+                pack.key_overrides
+                    .get(key_name)
+                    .and_then(|k| k.keydown.clone())
+            } else {
+                None
+            }
+        }
     }
 }
 
@@ -211,7 +251,23 @@ pub fn apply_slot_to_pack(pack: &mut SoundPack, slot: &str, path: Option<String>
                 pack.category_overrides.remove("delete");
             }
         }
-        _ => {}
+        _ => {
+            // Handle per-key slots: "key:KeyA" -> key_overrides["KeyA"]
+            if let Some(key_name) = slot.strip_prefix("key:") {
+                if let Some(p) = path {
+                    pack.key_overrides
+                        .entry(key_name.to_string())
+                        .or_insert_with(|| KeySound {
+                            keydown: None,
+                            keyup: None,
+                            volume: Some(1.0),
+                        })
+                        .keydown = Some(p);
+                } else {
+                    pack.key_overrides.remove(key_name);
+                }
+            }
+        }
     }
 }
 
@@ -401,7 +457,9 @@ pub fn import_sound_to_pack(
     }
 
     // Copy file to pack sounds directory
-    let dst_filename = format!("keydown-{}.{}", slot, ext);
+    // Sanitize slot name for filesystem (e.g. "key:KeyA" -> "key-KeyA")
+    let safe_slot = slot.replace(':', "-");
+    let dst_filename = format!("keydown-{}.{}", safe_slot, ext);
     let dst = pack_dir.join("sounds").join(&dst_filename);
     std::fs::copy(src_path, &dst).map_err(|e| format!("Failed to copy file: {}", e))?;
     let sound_path = format!("sounds/{}", dst_filename);
@@ -1024,5 +1082,170 @@ mod tests {
         let all = discover_all_packs(&bundled_dir, &user_dir);
         assert_eq!(all.len(), 1);
         assert_eq!(all[0].id, "default");
+    }
+
+    // --- Per-key sound slots ---
+
+    #[test]
+    fn test_apply_slot_per_key() {
+        let dir = TempDir::new().unwrap();
+        create_test_pack_dir(dir.path(), "p", Some("user"));
+        let mut pack = SoundPack::load(&dir.path().join("p")).unwrap();
+
+        apply_slot_to_pack(&mut pack, "key:KeyA", Some("sounds/a.mp3".into()));
+        assert!(pack.key_overrides.contains_key("KeyA"));
+        assert_eq!(
+            pack.key_overrides["KeyA"].keydown.as_deref(),
+            Some("sounds/a.mp3")
+        );
+
+        apply_slot_to_pack(&mut pack, "key:KeyA", None);
+        assert!(!pack.key_overrides.contains_key("KeyA"));
+    }
+
+    #[test]
+    fn test_get_slot_path_per_key() {
+        let dir = TempDir::new().unwrap();
+        create_test_pack_dir(dir.path(), "p", Some("user"));
+        let mut pack = SoundPack::load(&dir.path().join("p")).unwrap();
+
+        pack.key_overrides.insert(
+            "KeyB".into(),
+            KeySound {
+                keydown: Some("sounds/b.wav".into()),
+                keyup: None,
+                volume: Some(1.0),
+            },
+        );
+
+        assert_eq!(
+            get_slot_path(&pack, "key:KeyB"),
+            Some("sounds/b.wav".into())
+        );
+        assert_eq!(get_slot_path(&pack, "key:KeyZ"), None);
+    }
+
+    #[test]
+    fn test_get_all_slots_with_per_key() {
+        let dir = TempDir::new().unwrap();
+        create_test_pack_dir(dir.path(), "p", Some("user"));
+        let mut pack = SoundPack::load(&dir.path().join("p")).unwrap();
+
+        pack.key_overrides.insert(
+            "KeyA".into(),
+            KeySound {
+                keydown: Some("sounds/a.mp3".into()),
+                keyup: None,
+                volume: Some(1.0),
+            },
+        );
+        pack.original_names
+            .insert("key:KeyA".into(), "a-sound.mp3".into());
+
+        let slots = get_all_slots(&pack);
+        assert_eq!(slots.len(), 6); // 5 category + 1 per-key
+        let key_slot = slots.iter().find(|s| s.slot == "key:KeyA").unwrap();
+        assert_eq!(key_slot.label, "KeyA");
+        assert_eq!(key_slot.file_name.as_deref(), Some("a-sound.mp3"));
+    }
+
+    #[test]
+    fn test_get_all_slots_per_key_skips_space_return() {
+        let dir = TempDir::new().unwrap();
+        create_test_pack_dir(dir.path(), "p", Some("user"));
+        let mut pack = SoundPack::load(&dir.path().join("p")).unwrap();
+
+        // Add Space and Return as key_overrides (these are category slots)
+        apply_slot_to_pack(&mut pack, "space", Some("sounds/space.mp3".into()));
+        apply_slot_to_pack(&mut pack, "enter", Some("sounds/enter.mp3".into()));
+        // Add a real per-key override
+        apply_slot_to_pack(&mut pack, "key:KeyC", Some("sounds/c.mp3".into()));
+
+        let slots = get_all_slots(&pack);
+        // Should have 5 category + 1 per-key (Space/Return not duplicated)
+        assert_eq!(slots.len(), 6);
+        assert!(slots.iter().any(|s| s.slot == "key:KeyC"));
+        assert!(!slots.iter().any(|s| s.slot == "key:Space"));
+        assert!(!slots.iter().any(|s| s.slot == "key:Return"));
+    }
+
+    #[test]
+    fn test_import_per_key_sound() {
+        let dir = TempDir::new().unwrap();
+        let user_dir = dir.path().join("user-soundpacks");
+        fs::create_dir_all(&user_dir).unwrap();
+        let resource_dir = dir.path().join("res");
+        fs::create_dir_all(&resource_dir).unwrap();
+
+        let pack = create_custom_pack_dir(&user_dir, &resource_dir, "Test").unwrap();
+
+        let audio = dir.path().join("a-key.mp3");
+        fs::write(&audio, b"fake mp3").unwrap();
+
+        let pack = import_sound_to_pack(&pack.base_path, "key:KeyA", &audio).unwrap();
+
+        assert!(pack.key_overrides.contains_key("KeyA"));
+        assert_eq!(
+            pack.original_names.get("key:KeyA").map(|s| s.as_str()),
+            Some("a-key.mp3")
+        );
+        // Filename uses sanitized slot: "key:KeyA" -> "key-KeyA"
+        assert!(pack
+            .base_path
+            .join("sounds")
+            .join("keydown-key-KeyA.mp3")
+            .exists());
+    }
+
+    #[test]
+    fn test_remove_per_key_slot() {
+        let dir = TempDir::new().unwrap();
+        let user_dir = dir.path().join("user-soundpacks");
+        fs::create_dir_all(&user_dir).unwrap();
+        let resource_dir = dir.path().join("res");
+        fs::create_dir_all(&resource_dir).unwrap();
+
+        let pack = create_custom_pack_dir(&user_dir, &resource_dir, "Test").unwrap();
+
+        let audio = dir.path().join("b.wav");
+        fs::write(&audio, b"fake wav").unwrap();
+        import_sound_to_pack(&pack.base_path, "key:KeyB", &audio).unwrap();
+
+        let pack = remove_slot_from_pack(&pack.base_path, "key:KeyB", &resource_dir).unwrap();
+        assert!(!pack.key_overrides.contains_key("KeyB"));
+        assert!(!pack.original_names.contains_key("key:KeyB"));
+    }
+
+    #[test]
+    fn test_per_key_multiple_keys() {
+        let dir = TempDir::new().unwrap();
+        let user_dir = dir.path().join("user-soundpacks");
+        fs::create_dir_all(&user_dir).unwrap();
+        let resource_dir = dir.path().join("res");
+        fs::create_dir_all(&resource_dir).unwrap();
+
+        let pack = create_custom_pack_dir(&user_dir, &resource_dir, "Multi").unwrap();
+
+        let audio_a = dir.path().join("a.mp3");
+        let audio_b = dir.path().join("b.wav");
+        let audio_c = dir.path().join("c.ogg");
+        fs::write(&audio_a, b"fake").unwrap();
+        fs::write(&audio_b, b"fake").unwrap();
+        fs::write(&audio_c, b"fake").unwrap();
+
+        import_sound_to_pack(&pack.base_path, "key:KeyA", &audio_a).unwrap();
+        import_sound_to_pack(&pack.base_path, "key:KeyB", &audio_b).unwrap();
+        import_sound_to_pack(&pack.base_path, "key:Digit0", &audio_c).unwrap();
+
+        let pack = SoundPack::load(&pack.base_path).unwrap();
+        let slots = get_all_slots(&pack);
+        // 5 category + 3 per-key = 8
+        assert_eq!(slots.len(), 8);
+
+        // Per-key slots should be sorted alphabetically
+        let per_key: Vec<_> = slots.iter().filter(|s| s.slot.starts_with("key:")).collect();
+        assert_eq!(per_key[0].slot, "key:Digit0");
+        assert_eq!(per_key[1].slot, "key:KeyA");
+        assert_eq!(per_key[2].slot, "key:KeyB");
     }
 }

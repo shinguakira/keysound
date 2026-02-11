@@ -50,6 +50,85 @@
   // Delete confirmation
   let deletingPackId = $state<string | null>(null);
 
+  // Per-key sound state
+  let newPackKeySlots = $state<Record<string, string | null>>({});
+  let showKeyboardCreate = $state(false);
+  let showKeyboardEdit = $state(false);
+
+  // Virtual keyboard layout (rdev key names)
+  const KEYBOARD_ROWS = [
+    [
+      { key: "Escape", label: "Esc", w: 1 },
+      { key: "F1", label: "F1", w: 1 },
+      { key: "F2", label: "F2", w: 1 },
+      { key: "F3", label: "F3", w: 1 },
+      { key: "F4", label: "F4", w: 1 },
+      { key: "F5", label: "F5", w: 1 },
+      { key: "F6", label: "F6", w: 1 },
+      { key: "F7", label: "F7", w: 1 },
+      { key: "F8", label: "F8", w: 1 },
+      { key: "F9", label: "F9", w: 1 },
+      { key: "F10", label: "F10", w: 1 },
+      { key: "F11", label: "F11", w: 1 },
+      { key: "F12", label: "F12", w: 1 },
+    ],
+    [
+      { key: "Backquote", label: "`", w: 1 },
+      { key: "Digit1", label: "1", w: 1 },
+      { key: "Digit2", label: "2", w: 1 },
+      { key: "Digit3", label: "3", w: 1 },
+      { key: "Digit4", label: "4", w: 1 },
+      { key: "Digit5", label: "5", w: 1 },
+      { key: "Digit6", label: "6", w: 1 },
+      { key: "Digit7", label: "7", w: 1 },
+      { key: "Digit8", label: "8", w: 1 },
+      { key: "Digit9", label: "9", w: 1 },
+      { key: "Digit0", label: "0", w: 1 },
+      { key: "Minus", label: "-", w: 1 },
+      { key: "Equal", label: "=", w: 1 },
+    ],
+    [
+      { key: "KeyQ", label: "Q", w: 1 },
+      { key: "KeyW", label: "W", w: 1 },
+      { key: "KeyE", label: "E", w: 1 },
+      { key: "KeyR", label: "R", w: 1 },
+      { key: "KeyT", label: "T", w: 1 },
+      { key: "KeyY", label: "Y", w: 1 },
+      { key: "KeyU", label: "U", w: 1 },
+      { key: "KeyI", label: "I", w: 1 },
+      { key: "KeyO", label: "O", w: 1 },
+      { key: "KeyP", label: "P", w: 1 },
+      { key: "BracketLeft", label: "[", w: 1 },
+      { key: "BracketRight", label: "]", w: 1 },
+      { key: "Backslash", label: "\\", w: 1 },
+    ],
+    [
+      { key: "KeyA", label: "A", w: 1 },
+      { key: "KeyS", label: "S", w: 1 },
+      { key: "KeyD", label: "D", w: 1 },
+      { key: "KeyF", label: "F", w: 1 },
+      { key: "KeyG", label: "G", w: 1 },
+      { key: "KeyH", label: "H", w: 1 },
+      { key: "KeyJ", label: "J", w: 1 },
+      { key: "KeyK", label: "K", w: 1 },
+      { key: "KeyL", label: "L", w: 1 },
+      { key: "Semicolon", label: ";", w: 1 },
+      { key: "Quote", label: "'", w: 1 },
+    ],
+    [
+      { key: "KeyZ", label: "Z", w: 1 },
+      { key: "KeyX", label: "X", w: 1 },
+      { key: "KeyC", label: "C", w: 1 },
+      { key: "KeyV", label: "V", w: 1 },
+      { key: "KeyB", label: "B", w: 1 },
+      { key: "KeyN", label: "N", w: 1 },
+      { key: "KeyM", label: "M", w: 1 },
+      { key: "Comma", label: ",", w: 1 },
+      { key: "Period", label: ".", w: 1 },
+      { key: "Slash", label: "/", w: 1 },
+    ],
+  ];
+
   const SLOT_LABELS: Record<string, string> = {
     default: "Default Key",
     space: "Space",
@@ -206,6 +285,7 @@
       modifier: null,
       backspace: null,
     };
+    newPackKeySlots = {};
   }
 
   function fileName(path: string | null): string | null {
@@ -230,8 +310,19 @@
         name: newPackName.trim(),
       });
 
-      // Import all selected files into slots
+      // Import all selected files into category slots
       for (const [slot, filePath] of Object.entries(newPackSlots)) {
+        if (filePath) {
+          await invoke("import_sound_file", {
+            packId: pack.id,
+            slot,
+            filePath,
+          });
+        }
+      }
+
+      // Import per-key sound files
+      for (const [slot, filePath] of Object.entries(newPackKeySlots)) {
         if (filePath) {
           await invoke("import_sound_file", {
             packId: pack.id,
@@ -303,6 +394,80 @@
       console.error("Failed to remove slot:", e);
       alert(`Failed to remove: ${e}`);
     }
+  }
+
+  // --- Per-key sound helpers ---
+
+  function isKeyAssigned(
+    keyName: string,
+    keySlots: Record<string, string | null>,
+    editSlotsList?: SlotInfo[],
+  ): boolean {
+    if (editSlotsList) {
+      return editSlotsList.some((s) => s.slot === `key:${keyName}`);
+    }
+    return `key:${keyName}` in keySlots;
+  }
+
+  async function handleKeyboardClickCreate(keyName: string) {
+    const slot = `key:${keyName}`;
+    if (slot in newPackKeySlots) {
+      // Already assigned — remove it
+      delete newPackKeySlots[slot];
+      newPackKeySlots = { ...newPackKeySlots };
+      return;
+    }
+    try {
+      const selected = await open({
+        multiple: false,
+        filters: [{ name: "Audio", extensions: ["mp3", "wav", "ogg"] }],
+      });
+      if (selected) {
+        newPackKeySlots[slot] = selected as string;
+      }
+    } catch (e) {
+      alert(`Failed to pick file: ${e}`);
+    }
+  }
+
+  async function handleKeyboardClickEdit(packId: string, keyName: string) {
+    const slot = `key:${keyName}`;
+    const existing = editSlots.find((s) => s.slot === slot);
+    if (existing) {
+      // Already assigned — remove it
+      try {
+        await invoke("remove_sound_slot", { packId, slot });
+        editSlots = await invoke<SlotInfo[]>("get_custom_pack_slots", {
+          packId,
+        });
+      } catch (e) {
+        alert(`Failed to remove: ${e}`);
+      }
+      return;
+    }
+    try {
+      const selected = await open({
+        multiple: false,
+        filters: [{ name: "Audio", extensions: ["mp3", "wav", "ogg"] }],
+      });
+      if (selected) {
+        await invoke("import_sound_file", {
+          packId,
+          slot,
+          filePath: selected,
+        });
+        editSlots = await invoke<SlotInfo[]>("get_custom_pack_slots", {
+          packId,
+        });
+      }
+    } catch (e) {
+      alert(`Failed to add key sound: ${e}`);
+    }
+  }
+
+  function removeKeyCreate(slot: string) {
+    delete newPackKeySlots[slot];
+    newPackKeySlots = { ...newPackKeySlots };
   }
 
   async function handleDeletePack(packId: string) {
@@ -478,6 +643,51 @@
             {/each}
           </div>
 
+          <button
+            class="action-btn toggle-keyboard-btn"
+            onclick={() => (showKeyboardCreate = !showKeyboardCreate)}
+          >
+            {showKeyboardCreate ? "Hide Keyboard" : "Set Sound for Each Key"}
+          </button>
+
+          {#if showKeyboardCreate}
+            <div class="virtual-keyboard">
+              {#each KEYBOARD_ROWS as row, ri (ri)}
+                <div class="kb-row">
+                  {#each row as k (k.key)}
+                    <button
+                      class="kb-key"
+                      class:assigned={isKeyAssigned(k.key, newPackKeySlots)}
+                      onclick={() => handleKeyboardClickCreate(k.key)}
+                      title={isKeyAssigned(k.key, newPackKeySlots)
+                        ? `${k.key}: ${fileName(newPackKeySlots["key:" + k.key])} (click to remove)`
+                        : `${k.key}: click to assign sound`}
+                    >
+                      {k.label}
+                    </button>
+                  {/each}
+                </div>
+              {/each}
+              <p class="kb-hint">Click a key to assign a sound file. Click again to remove.</p>
+            </div>
+
+            {#if Object.keys(newPackKeySlots).length > 0}
+              <div class="assigned-keys-list">
+                {#each Object.entries(newPackKeySlots) as [slot, filePath] (slot)}
+                  <div class="slot-row">
+                    <span class="slot-label">{slot.replace("key:", "")}</span>
+                    <div class="slot-controls">
+                      <span class="slot-file">{fileName(filePath)}</span>
+                      <button class="action-btn remove-btn" onclick={() => removeKeyCreate(slot)}>
+                        X
+                      </button>
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          {/if}
+
           <p class="slot-hint">
             Default Key is required. Other slots are optional — keys without a
             specific sound will use the Default Key sound.
@@ -495,7 +705,7 @@
         <!-- Existing custom packs -->
         {#if customPacks.length > 0}
           <h3 class="section-title">Your Custom Sounds</h3>
-          <div class="pack-list">
+          <div class="pack-list pack-list-column">
             {#each customPacks as pack (pack.id)}
               <div class="pack-wrapper">
                 <div
@@ -511,6 +721,7 @@
                     <div class="pack-actions">
                       <button
                         class="action-btn edit-btn"
+                        class:save-btn={editingPack?.id === pack.id}
                         onclick={(e) => { e.stopPropagation(); startEdit(pack); }}
                       >
                         {editingPack?.id === pack.id ? "Save" : "Edit"}
@@ -519,7 +730,7 @@
                         class="action-btn delete-btn"
                         onclick={(e) => { e.stopPropagation(); deletingPackId = pack.id; }}
                       >
-                        Del
+                        Delete
                       </button>
                     </div>
                   </div>
@@ -547,7 +758,7 @@
 
                 {#if editingPack?.id === pack.id}
                   <div class="slot-editor">
-                    {#each editSlots as slot (slot.slot)}
+                    {#each editSlots.filter((s) => !s.slot.startsWith("key:")) as slot (slot.slot)}
                       <div class="slot-row">
                         <span class="slot-label">{slot.label}</span>
                         <div class="slot-controls">
@@ -572,6 +783,62 @@
                         </div>
                       </div>
                     {/each}
+
+                    <button
+                      class="action-btn toggle-keyboard-btn"
+                      onclick={() => (showKeyboardEdit = !showKeyboardEdit)}
+                    >
+                      {showKeyboardEdit ? "Hide Keyboard" : "Set Sound for Each Key"}
+                    </button>
+
+                    {#if showKeyboardEdit}
+                      <div class="virtual-keyboard">
+                        {#each KEYBOARD_ROWS as row, ri (ri)}
+                          <div class="kb-row">
+                            {#each row as k (k.key)}
+                              <button
+                                class="kb-key"
+                                class:assigned={isKeyAssigned(k.key, {}, editSlots)}
+                                onclick={() => handleKeyboardClickEdit(pack.id, k.key)}
+                                title={isKeyAssigned(k.key, {}, editSlots)
+                                  ? `${k.key}: assigned (click to remove)`
+                                  : `${k.key}: click to assign sound`}
+                              >
+                                {k.label}
+                              </button>
+                            {/each}
+                          </div>
+                        {/each}
+                        <p class="kb-hint">Click a key to assign a sound file. Click again to remove.</p>
+                      </div>
+
+                      {#each editSlots.filter((s) => s.slot.startsWith("key:")) as slot (slot.slot)}
+                        <div class="slot-row">
+                          <span class="slot-label">{slot.label}</span>
+                          <div class="slot-controls">
+                            <span class="slot-file" class:empty={!slot.file_name}>
+                              {slot.file_name ?? "None"}
+                            </span>
+                            <button
+                              class="action-btn choose-btn"
+                              onclick={() => handleImportSlot(pack.id, slot.slot)}
+                              disabled={importingSlot === slot.slot}
+                            >
+                              {importingSlot === slot.slot ? "..." : "Choose File"}
+                            </button>
+                            {#if slot.file_name}
+                              <button
+                                class="action-btn remove-btn"
+                                onclick={() => handleRemoveSlot(pack.id, slot.slot)}
+                              >
+                                X
+                              </button>
+                            {/if}
+                          </div>
+                        </div>
+                      {/each}
+                    {/if}
+
                     <p class="slot-hint">
                       Keys without a sound assigned will use the Default Key sound.
                       If Default Key is also empty, those keys will be silent.
@@ -615,7 +882,6 @@
 
   main {
     padding: 24px;
-    max-width: 440px;
     margin: 0 auto;
     user-select: none;
   }
@@ -805,9 +1071,13 @@
   }
 
   .pack-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 8px;
+  }
+
+  .pack-list.pack-list-column {
+    grid-template-columns: 1fr;
   }
 
   .pack-wrapper {
@@ -822,7 +1092,7 @@
     background: #16213e;
     border: 2px solid transparent;
     border-radius: 10px;
-    padding: 14px 18px;
+    padding: 12px 14px;
     cursor: pointer;
     transition: all 0.2s;
     color: inherit;
@@ -890,11 +1160,14 @@
 
   .pack-name {
     font-weight: 600;
-    font-size: 1em;
+    font-size: 0.9em;
     color: #fff;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .custom-badge {
@@ -920,9 +1193,12 @@
   }
 
   .pack-desc {
-    font-size: 0.85em;
+    font-size: 0.75em;
     color: #aaa;
     margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* Custom section */
@@ -1015,6 +1291,78 @@
     line-height: 1.4;
   }
 
+  .toggle-keyboard-btn {
+    margin-top: 8px;
+    width: 100%;
+    padding: 6px 8px !important;
+    text-align: center;
+    border-style: dashed !important;
+    color: #53c0f0 !important;
+  }
+
+  .toggle-keyboard-btn:hover {
+    background: #1a2a3e !important;
+  }
+
+  .virtual-keyboard {
+    margin: 8px 0;
+    padding: 8px;
+    background: #0d1220;
+    border-radius: 8px;
+    border: 1px solid #1a1a3e;
+  }
+
+  .kb-row {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 3px;
+    justify-content: center;
+  }
+
+  .kb-row:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .kb-key {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 2px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background: #16213e;
+    color: #999;
+    font-size: 0.65em;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .kb-key:hover {
+    background: #1a2744;
+    color: #fff;
+    border-color: #53c0f0;
+  }
+
+  .kb-key.assigned {
+    background: #0f3460;
+    border-color: #53c0f0;
+    color: #53c0f0;
+    font-weight: 600;
+  }
+
+  .kb-hint {
+    font-size: 0.65em;
+    color: #555;
+    text-align: center;
+    margin: 6px 0 0;
+  }
+
+  .assigned-keys-list {
+    margin-top: 6px;
+  }
+
   .action-btn {
     padding: 3px 8px;
     border: 1px solid #444;
@@ -1042,19 +1390,48 @@
     color: #53c0f0;
   }
 
-  .edit-btn:hover {
+  .edit-btn {
+    background: #2980b9;
     border-color: #53c0f0;
-    color: #53c0f0;
+    color: #fff;
+  }
+
+  .edit-btn:hover {
+    background: #3498db;
+    border-color: #7ec8e3;
+  }
+
+  .edit-btn.save-btn {
+    background: #27ae60;
+    border-color: #2ecc71;
+    color: #fff;
+  }
+
+  .edit-btn.save-btn:hover {
+    background: #2ecc71;
+    border-color: #6fcf97;
+  }
+
+  .remove-btn {
+    background: #c0392b;
+    border-color: #e74c3c;
+    color: #fff;
   }
 
   .remove-btn:hover {
+    background: #e74c3c;
+    border-color: #ff6b6b;
+  }
+
+  .delete-btn {
+    background: #c0392b;
     border-color: #e74c3c;
-    color: #e74c3c;
+    color: #fff;
   }
 
   .delete-btn:hover {
-    border-color: #e74c3c;
-    color: #e74c3c;
+    background: #e74c3c;
+    border-color: #ff6b6b;
   }
 
   .create-btn {
@@ -1114,9 +1491,10 @@
   .slot-editor {
     background: #12192e;
     border: 1px solid #1a1a3e;
+    border-top: 2px solid #2a2a4a;
     border-radius: 0 0 10px 10px;
     margin-top: -2px;
-    padding: 8px 14px;
+    padding: 14px 14px;
   }
 
   footer {

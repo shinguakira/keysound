@@ -86,7 +86,13 @@
       "Bash(npx svelte-kit sync:*)",
       "WebFetch(domain:webdriver.io)",
       "WebFetch(domain:www.npmjs.com)",
-      "Bash(npx wdio:*)"
+      "Bash(npx wdio:*)",
+      "Bash(cmd.exe /c \"call \"\"C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\\\\2022\\\\BuildTools\\\\VC\\\\Auxiliary\\\\Build\\\\vcvars64.bat\"\" >nul 2>&1 && set PATH=%USERPROFILE%\\\\.cargo\\\\bin;%PATH% && cd /d E:\\\\workspace\\\\keysound\\\\src-tauri && cargo +stable-x86_64-pc-windows-msvc test --target x86_64-pc-windows-msvc 2>&1\")",
+      "Bash(cmd.exe /c \"call \"\"C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\\\\2022\\\\BuildTools\\\\VC\\\\Auxiliary\\\\Build\\\\vcvars64.bat\"\" && set PATH=%USERPROFILE%\\\\.cargo\\\\bin;%PATH% && cd /d E:\\\\workspace\\\\keysound\\\\src-tauri && cargo +stable-x86_64-pc-windows-msvc test --target x86_64-pc-windows-msvc\")",
+      "Bash(npx svelte-check:*)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

@@ -53,7 +53,7 @@ Volume resolution follows the same 3-tier hierarchy.
 
 - User enters a pack name
 - Must provide at least the **Default Key** sound (required)
-- 5 editable slots:
+- 5 editable category slots:
 
 | Slot        | Label              | Keys Affected                |
 | ----------- | ------------------ | ---------------------------- |
@@ -63,6 +63,13 @@ Volume resolution follows the same 3-tier hierarchy.
 | `modifier`  | Modifiers          | Shift, Ctrl, Alt, Meta (L+R) |
 | `backspace` | Backspace / Delete | Backspace, Delete            |
 
+- Optional **per-key sound assignment** for individual keys (e.g., A, B, C, Digit0)
+  - Uses slot naming convention `key:{rdev_key_name}` (e.g., `key:KeyA`, `key:Digit0`)
+  - Maps directly to `key_overrides` in pack.json
+  - Added via "Press any key..." capture UI in both create and edit forms
+  - Keys already covered by category slots (Space, Return) are rejected
+  - Sound files stored as `sounds/keydown-key-{KeyName}.{ext}`
+  - Per-key overrides take priority over category overrides in sound resolution
 - Audio files are **copied** into `%APPDATA%/com.keysound.desktop/user-soundpacks/{pack-id}/sounds/`
 - Original files are never referenced after import
 - Pack ID generated via slugify (lowercase, dashes) with collision avoidance
@@ -81,11 +88,13 @@ Volume resolution follows the same 3-tier hierarchy.
 ### 8. Edit Custom Pack
 
 - Toggle edit mode per pack (Edit/Save button)
-- View all 5 slots with current file names
+- View all 5 category slots with current file names
+- View per-key sound overrides (if any) below category slots
 - Add/replace sound in any slot via file picker
+- Add per-key sound via "+ Add Key Sound" button (key capture → file picker)
 - Remove sound from a slot:
   - Default slot: resets to silence placeholder
-  - Other slots: removes override entirely (falls back to default sound)
+  - Category/per-key slots: removes override entirely (falls back to default sound)
 - If editing the active pack, sounds are reloaded immediately
 
 ### 9. Delete Custom Pack
@@ -113,7 +122,7 @@ Custom packs show a "Custom" badge in the Sound Packs tab.
 ### 11. Window
 
 - Title: "KeySound"
-- Size: 480 x 600 (resizable)
+- Size: 480 x 640 (resizable)
 - Centered on launch
 - Close button quits the app
 - "Minimize to Tray" button in header hides window to system tray (app keeps running)
@@ -246,7 +255,8 @@ Custom packs show a "Custom" badge in the Sound Packs tab.
 | Default volume             | 1.0                            |
 | Custom pack default volume | 0.8                            |
 | Silence placeholder        | 441 samples @ 44100 Hz (~10ms) |
-| Window dimensions          | 480 x 600                      |
+| Window dimensions          | 480 x 640                      |
 | Bundled pack count         | 24                             |
-| Custom pack slots          | 5                              |
+| Custom pack category slots | 5                              |
+| Custom pack per-key slots  | unlimited (optional)           |
 | Data version               | 1                              |
