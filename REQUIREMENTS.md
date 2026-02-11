@@ -55,13 +55,13 @@ Volume resolution follows the same 3-tier hierarchy.
 - Must provide at least the **Default Key** sound (required)
 - 5 editable slots:
 
-| Slot | Label | Keys Affected |
-|------|-------|---------------|
-| `default` | Default Key | All keys (fallback) |
-| `space` | Space | Space |
-| `enter` | Enter | Return, NumpadEnter |
-| `modifier` | Modifiers | Shift, Ctrl, Alt, Meta (L+R) |
-| `backspace` | Backspace / Delete | Backspace, Delete |
+| Slot        | Label              | Keys Affected                |
+| ----------- | ------------------ | ---------------------------- |
+| `default`   | Default Key        | All keys (fallback)          |
+| `space`     | Space              | Space                        |
+| `enter`     | Enter              | Return, NumpadEnter          |
+| `modifier`  | Modifiers          | Shift, Ctrl, Alt, Meta (L+R) |
+| `backspace` | Backspace / Delete | Backspace, Delete            |
 
 - Audio files are **copied** into `%APPDATA%/com.keysound.desktop/user-soundpacks/{pack-id}/sounds/`
 - Original files are never referenced after import
@@ -99,6 +99,7 @@ Volume resolution follows the same 3-tier hierarchy.
 ### 10. Pack List Ordering
 
 Display order in both tabs:
+
 1. Default (HHKB) - always first
 2. Custom/user packs (alphabetical)
 3. Other bundled packs (alphabetical)
@@ -183,7 +184,16 @@ Custom packs show a "Custom" badge in the Sound Packs tab.
   },
   "category_overrides": {
     "modifiers": {
-      "keys": ["ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "Alt", "AltGr", "MetaLeft", "MetaRight"],
+      "keys": [
+        "ShiftLeft",
+        "ShiftRight",
+        "ControlLeft",
+        "ControlRight",
+        "Alt",
+        "AltGr",
+        "MetaLeft",
+        "MetaRight"
+      ],
       "keydown": "sounds/keydown-modifier.mp3"
     }
   },
@@ -229,14 +239,14 @@ Custom packs show a "Custom" badge in the Sound Packs tab.
 
 ## Constants
 
-| Name | Value |
-|------|-------|
-| Max sound file size | 5 MB |
-| Allowed audio formats | mp3, wav, ogg |
-| Default volume | 1.0 |
-| Custom pack default volume | 0.8 |
-| Silence placeholder | 441 samples @ 44100 Hz (~10ms) |
-| Window dimensions | 480 x 600 |
-| Bundled pack count | 24 |
-| Custom pack slots | 5 |
-| Data version | 1 |
+| Name                       | Value                          |
+| -------------------------- | ------------------------------ |
+| Max sound file size        | 5 MB                           |
+| Allowed audio formats      | mp3, wav, ogg                  |
+| Default volume             | 1.0                            |
+| Custom pack default volume | 0.8                            |
+| Silence placeholder        | 441 samples @ 44100 Hz (~10ms) |
+| Window dimensions          | 480 x 600                      |
+| Bundled pack count         | 24                             |
+| Custom pack slots          | 5                              |
+| Data version               | 1                              |

@@ -8,15 +8,7 @@ import { fileURLToPath } from "url";
 import decode from "audio-decode";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const PIANO_DIR = join(
-  __dirname,
-  "..",
-  "src-tauri",
-  "resources",
-  "soundpacks",
-  "piano",
-  "sounds",
-);
+const PIANO_DIR = join(__dirname, "..", "src-tauri", "resources", "soundpacks", "piano", "sounds");
 
 const SAMPLE_RATE = 44100;
 const BIT_DEPTH = 16;
@@ -106,9 +98,7 @@ async function main() {
     fadeOut(shifted, 30);
     const wav = encodeWav(Array.from(shifted));
     writeFileSync(join(PIANO_DIR, v.name), wav);
-    console.log(
-      `  ${v.name}: pitch x${v.ratio}, ${v.trim}s, ${wav.length} bytes`,
-    );
+    console.log(`  ${v.name}: pitch x${v.ratio}, ${v.trim}s, ${wav.length} bytes`);
   }
 
   // Remove old mp3 files

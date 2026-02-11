@@ -1,6 +1,7 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { open } from "@tauri-apps/plugin-dialog";
+  import { LazyStore } from "@tauri-apps/plugin-store";
   import { onMount } from "svelte";
 
   interface SoundPackInfo {
@@ -22,9 +23,13 @@
   let enabled = $state(true);
   let volume = $state(0.8);
   let packs = $state<SoundPackInfo[]>([]);
+  let orderedPacks = $state<SoundPackInfo[]>([]);
   let activePackId = $state<string | null>(null);
   let loading = $state(true);
   let activeTab = $state<Tab>("packs");
+
+  // Reorder state
+  const store = new LazyStore("settings.json");
 
   // Custom tab state
   let newPackName = $state("");
@@ -60,6 +65,7 @@
       enabled = await invoke<boolean>("get_enabled");
       volume = await invoke<number>("get_volume");
       packs = await invoke<SoundPackInfo[]>("get_sound_packs");
+      orderedPacks = await applyPackOrder(packs);
       activePackId = await invoke<string | null>("get_active_pack_id");
     } catch (e) {
       console.error("Failed to load settings:", e);
@@ -69,6 +75,7 @@
 
   async function refreshPacks() {
     packs = await invoke<SoundPackInfo[]>("get_sound_packs");
+    orderedPacks = await applyPackOrder(packs);
   }
 
   async function hideToTray() {
@@ -109,6 +116,54 @@
   function handleTestKeydown(e: KeyboardEvent) {
     const key = domKeyToRdev(e.code);
     invoke("play_sound", { key }).catch(() => {});
+  }
+
+  // --- Pack order persistence ---
+
+  async function applyPackOrder(packList: SoundPackInfo[]): Promise<SoundPackInfo[]> {
+    const savedOrder = await store.get<string[]>("packOrder");
+    if (!savedOrder || savedOrder.length === 0) return packList;
+
+    const placed: Record<string, boolean> = {};
+    const ordered: SoundPackInfo[] = [];
+
+    for (const id of savedOrder) {
+      const pack = packList.find((p) => p.id === id);
+      if (pack) {
+        ordered.push(pack);
+        placed[id] = true;
+      }
+    }
+
+    // Append new packs not in saved order
+    for (const pack of packList) {
+      if (!placed[pack.id]) {
+        ordered.push(pack);
+      }
+    }
+
+    return ordered;
+  }
+
+  async function savePackOrder(packList: SoundPackInfo[]) {
+    await store.set("packOrder", packList.map((p) => p.id));
+  }
+
+  function movePack(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) return;
+    const updated = [...orderedPacks];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    orderedPacks = updated;
+    savePackOrder(updated);
+  }
+
+  function movePackUp(index: number) {
+    if (index > 0) movePack(index, index - 1);
+  }
+
+  function movePackDown(index: number) {
+    if (index < orderedPacks.length - 1) movePack(index, index + 1);
   }
 
   async function handlePackSelect(packId: string) {
@@ -334,11 +389,11 @@
     <!-- Tab: Sound Packs (all packs) -->
     {#if activeTab === "packs"}
       <section class="packs-section">
-        {#if packs.length === 0}
+        {#if orderedPacks.length === 0}
           <p class="no-packs">No sound packs found</p>
         {:else}
           <div class="pack-list">
-            {#each packs as pack (pack.id)}
+            {#each orderedPacks as pack, i (pack.id)}
               <div
                 class="pack-card"
                 class:selected={activePackId === pack.id}
@@ -347,16 +402,34 @@
                 onclick={() => handlePackSelect(pack.id)}
                 onkeydown={(e) => e.key === "Enter" && handlePackSelect(pack.id)}
               >
-                <div class="pack-name">
-                  {pack.name}
-                  {#if pack.source === "user"}
-                    <span class="custom-badge">Custom</span>
-                  {/if}
+                <div class="pack-card-inner">
+                  <div class="pack-info">
+                    <div class="pack-name">
+                      {pack.name}
+                      {#if pack.source === "user"}
+                        <span class="custom-badge">Custom</span>
+                      {/if}
+                    </div>
+                    <div class="pack-author">{pack.author}</div>
+                    {#if pack.description}
+                      <div class="pack-desc">{pack.description}</div>
+                    {/if}
+                  </div>
+                  <div class="reorder-buttons">
+                    <button
+                      class="reorder-btn"
+                      title="Move up"
+                      disabled={i === 0}
+                      onclick={(e) => { e.stopPropagation(); movePackUp(i); }}
+                    >&#x25B2;</button>
+                    <button
+                      class="reorder-btn"
+                      title="Move down"
+                      disabled={i === orderedPacks.length - 1}
+                      onclick={(e) => { e.stopPropagation(); movePackDown(i); }}
+                    >&#x25BC;</button>
+                  </div>
                 </div>
-                <div class="pack-author">{pack.author}</div>
-                {#if pack.description}
-                  <div class="pack-desc">{pack.description}</div>
-                {/if}
               </div>
             {/each}
           </div>
@@ -765,6 +838,48 @@
   .pack-card.selected {
     border-color: #53c0f0;
     background: #0f3460;
+  }
+
+  .pack-card-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pack-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .reorder-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .reorder-btn {
+    padding: 2px 6px;
+    border: 1px solid #333;
+    border-radius: 3px;
+    background: transparent;
+    color: #666;
+    font-size: 0.65em;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1;
+    transition: all 0.15s;
+  }
+
+  .reorder-btn:hover:not(:disabled) {
+    background: #0f3460;
+    color: #53c0f0;
+    border-color: #53c0f0;
+  }
+
+  .reorder-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
   }
 
   .pack-top-row {

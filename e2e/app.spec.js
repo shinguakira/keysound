@@ -340,7 +340,9 @@ describe("Custom Sound - create, edit, delete lifecycle", () => {
   it("can create a custom pack via IPC", async () => {
     const result = await browser.executeAsync(async (done) => {
       try {
-        const r = await window.__TAURI_INTERNALS__.invoke("create_custom_pack", { name: "E2E Test Pack" });
+        const r = await window.__TAURI_INTERNALS__.invoke("create_custom_pack", {
+          name: "E2E Test Pack",
+        });
         done(r);
       } catch (e) {
         done({ error: String(e) });
@@ -509,13 +511,7 @@ describe("Custom Sound - create, edit, delete lifecycle", () => {
     for (const l of labels) {
       texts.push(await l.getText());
     }
-    expect(texts).toEqual([
-      "Default Key",
-      "Space",
-      "Enter",
-      "Modifiers",
-      "Backspace / Delete",
-    ]);
+    expect(texts).toEqual(["Default Key", "Space", "Enter", "Modifiers", "Backspace / Delete"]);
     await scrollTo(labels[labels.length - 1]);
   });
 
@@ -582,10 +578,10 @@ describe("Custom Sound - create, edit, delete lifecycle", () => {
 
     // Delete confirmation should appear
     const confirm = await targetWrapper.$(".delete-confirm");
-    await browser.waitUntil(
-      async () => await confirm.isDisplayed(),
-      { timeout: 5000, timeoutMsg: "Delete confirmation did not appear" },
-    );
+    await browser.waitUntil(async () => await confirm.isDisplayed(), {
+      timeout: 5000,
+      timeoutMsg: "Delete confirmation did not appear",
+    });
     await scrollTo(confirm);
 
     // Should show pack name in confirmation
@@ -614,10 +610,10 @@ describe("Custom Sound - create, edit, delete lifecycle", () => {
     await noBtn.click();
 
     // Confirmation should disappear
-    await browser.waitUntil(
-      async () => !(await confirm.isDisplayed()),
-      { timeout: 5000, timeoutMsg: "Delete confirmation did not close" },
-    );
+    await browser.waitUntil(async () => !(await confirm.isDisplayed()), {
+      timeout: 5000,
+      timeoutMsg: "Delete confirmation did not close",
+    });
 
     // Pack should still exist
     const name = await targetWrapper.$(".pack-name");
@@ -643,10 +639,7 @@ describe("Custom Sound - create, edit, delete lifecycle", () => {
     await delBtn.click();
 
     const confirm = await targetWrapper.$(".delete-confirm");
-    await browser.waitUntil(
-      async () => await confirm.isDisplayed(),
-      { timeout: 5000 },
-    );
+    await browser.waitUntil(async () => await confirm.isDisplayed(), { timeout: 5000 });
 
     // Click Yes to confirm deletion
     const yesBtn = await confirm.$(".delete-yes");
@@ -737,9 +730,13 @@ describe("Custom Sound - IPC backend commands", () => {
   it("can create a pack and read its slots via IPC", async () => {
     const pack = await browser.executeAsync(async (done) => {
       try {
-        const r = await window.__TAURI_INTERNALS__.invoke("create_custom_pack", { name: "IPC Test Pack" });
+        const r = await window.__TAURI_INTERNALS__.invoke("create_custom_pack", {
+          name: "IPC Test Pack",
+        });
         done(r);
-      } catch (e) { done({ error: String(e) }); }
+      } catch (e) {
+        done({ error: String(e) });
+      }
     });
     expect(pack.error).toBeUndefined();
     packId = pack.id;
@@ -750,7 +747,9 @@ describe("Custom Sound - IPC backend commands", () => {
       try {
         const r = await window.__TAURI_INTERNALS__.invoke("get_custom_pack_slots", { packId: id });
         done(r);
-      } catch (e) { done({ error: String(e) }); }
+      } catch (e) {
+        done({ error: String(e) });
+      }
     }, packId);
     expect(slots.error).toBeUndefined();
     expect(slots.length).toBe(5);
@@ -763,7 +762,9 @@ describe("Custom Sound - IPC backend commands", () => {
       try {
         const r = await window.__TAURI_INTERNALS__.invoke("get_sound_packs");
         done(r);
-      } catch (e) { done({ error: String(e) }); }
+      } catch (e) {
+        done({ error: String(e) });
+      }
     });
     expect(packs.error).toBeUndefined();
     const found = packs.find((p) => p.id === packId);
@@ -774,9 +775,14 @@ describe("Custom Sound - IPC backend commands", () => {
   it("can rename the custom pack via IPC", async () => {
     const result = await browser.executeAsync(async (id, done) => {
       try {
-        await window.__TAURI_INTERNALS__.invoke("rename_custom_pack", { packId: id, newName: "Renamed Pack" });
+        await window.__TAURI_INTERNALS__.invoke("rename_custom_pack", {
+          packId: id,
+          newName: "Renamed Pack",
+        });
         done({ ok: true });
-      } catch (e) { done({ error: String(e) }); }
+      } catch (e) {
+        done({ error: String(e) });
+      }
     }, packId);
     expect(result.error).toBeUndefined();
 
@@ -785,7 +791,9 @@ describe("Custom Sound - IPC backend commands", () => {
       try {
         const r = await window.__TAURI_INTERNALS__.invoke("get_sound_packs");
         done(r);
-      } catch (e) { done({ error: String(e) }); }
+      } catch (e) {
+        done({ error: String(e) });
+      }
     });
     const found = packs.find((p) => p.id === packId);
     expect(found.name).toBe("Renamed Pack");
@@ -796,7 +804,9 @@ describe("Custom Sound - IPC backend commands", () => {
       try {
         await window.__TAURI_INTERNALS__.invoke("delete_custom_pack", { packId: id });
         done({ ok: true });
-      } catch (e) { done({ error: String(e) }); }
+      } catch (e) {
+        done({ error: String(e) });
+      }
     }, packId);
     expect(result.error).toBeUndefined();
 
@@ -805,7 +815,9 @@ describe("Custom Sound - IPC backend commands", () => {
       try {
         const r = await window.__TAURI_INTERNALS__.invoke("get_sound_packs");
         done(r);
-      } catch (e) { done({ error: String(e) }); }
+      } catch (e) {
+        done({ error: String(e) });
+      }
     });
     const found = packs.find((p) => p.id === packId);
     expect(found).toBeUndefined();
@@ -821,9 +833,7 @@ describe("Footer", () => {
   it("shows the tray hint", async () => {
     const hint = await $(".hint");
     await scrollTo(hint);
-    await expect(hint).toHaveText(
-      'Use "Minimize to Tray" to keep running in background',
-    );
+    await expect(hint).toHaveText('Use "Minimize to Tray" to keep running in background');
   });
 
   it("shows the credits link", async () => {

@@ -7,9 +7,7 @@ import { ReportAggregator } from "wdio-html-nice-reporter";
 import video from "wdio-video-reporter";
 
 const CARGO_BIN = path.join(os.homedir(), ".cargo", "bin");
-const APP_BINARY = path.resolve(
-  "./src-tauri/target/x86_64-pc-windows-gnu/debug/keysound.exe",
-);
+const APP_BINARY = path.resolve("./src-tauri/target/x86_64-pc-windows-gnu/debug/keysound.exe");
 const REPORT_DIR = "./e2e-report";
 const SCREENSHOT_DIR = path.join(REPORT_DIR, "screenshots");
 
