@@ -1,0 +1,196 @@
+{
+  "id": "piano-real",
+  "name": "Piano Real",
+  "author": "Salamander Grand Piano V3 by Alexander Holm (CC BY 3.0)",
+  "version": "1.0.0",
+  "description": "Real grand piano — each key mapped to actual piano notes in DAW keyboard layout. 3 octaves (C3-F5).",
+  "defaults": {
+    "keydown": "sounds/keydown.wav",
+    "volume": 0.8
+  },
+  "key_overrides": {
+    "Comma": {
+      "keydown": "sounds/keydown-a2.wav",
+      "volume": 1
+    },
+    "Period": {
+      "keydown": "sounds/keydown-a2.wav",
+      "volume": 1
+    },
+    "KeyZ": {
+      "keydown": "sounds/keydown-c3.wav",
+      "volume": 1
+    },
+    "KeyS": {
+      "keydown": "sounds/keydown-c3.wav",
+      "volume": 1
+    },
+    "KeyX": {
+      "keydown": "sounds/keydown-dsharp3.wav",
+      "volume": 1
+    },
+    "KeyD": {
+      "keydown": "sounds/keydown-dsharp3.wav",
+      "volume": 1
+    },
+    "KeyC": {
+      "keydown": "sounds/keydown-dsharp3.wav",
+      "volume": 1
+    },
+    "KeyV": {
+      "keydown": "sounds/keydown-fsharp3.wav",
+      "volume": 1
+    },
+    "KeyG": {
+      "keydown": "sounds/keydown-fsharp3.wav",
+      "volume": 1
+    },
+    "KeyB": {
+      "keydown": "sounds/keydown-fsharp3.wav",
+      "volume": 1
+    },
+    "KeyH": {
+      "keydown": "sounds/keydown-a3.wav",
+      "volume": 1
+    },
+    "KeyN": {
+      "keydown": "sounds/keydown-a3.wav",
+      "volume": 1
+    },
+    "KeyJ": {
+      "keydown": "sounds/keydown-a3.wav",
+      "volume": 1
+    },
+    "KeyM": {
+      "keydown": "sounds/keydown-a3.wav",
+      "volume": 1
+    },
+    "KeyQ": {
+      "keydown": "sounds/keydown-c4.wav",
+      "volume": 1
+    },
+    "Digit2": {
+      "keydown": "sounds/keydown-c4.wav",
+      "volume": 1
+    },
+    "KeyW": {
+      "keydown": "sounds/keydown-dsharp4.wav",
+      "volume": 1
+    },
+    "Digit3": {
+      "keydown": "sounds/keydown-dsharp4.wav",
+      "volume": 1
+    },
+    "KeyE": {
+      "keydown": "sounds/keydown-dsharp4.wav",
+      "volume": 1
+    },
+    "KeyR": {
+      "keydown": "sounds/keydown-fsharp4.wav",
+      "volume": 1
+    },
+    "Digit5": {
+      "keydown": "sounds/keydown-fsharp4.wav",
+      "volume": 1
+    },
+    "KeyT": {
+      "keydown": "sounds/keydown-fsharp4.wav",
+      "volume": 1
+    },
+    "Digit6": {
+      "keydown": "sounds/keydown-a4.wav",
+      "volume": 1
+    },
+    "KeyY": {
+      "keydown": "sounds/keydown-a4.wav",
+      "volume": 1
+    },
+    "Digit7": {
+      "keydown": "sounds/keydown-a4.wav",
+      "volume": 1
+    },
+    "KeyU": {
+      "keydown": "sounds/keydown-a4.wav",
+      "volume": 1
+    },
+    "KeyI": {
+      "keydown": "sounds/keydown-c5.wav",
+      "volume": 1
+    },
+    "Digit8": {
+      "keydown": "sounds/keydown-c5.wav",
+      "volume": 1
+    },
+    "KeyO": {
+      "keydown": "sounds/keydown-dsharp5.wav",
+      "volume": 1
+    },
+    "Digit9": {
+      "keydown": "sounds/keydown-dsharp5.wav",
+      "volume": 1
+    },
+    "KeyP": {
+      "keydown": "sounds/keydown-dsharp5.wav",
+      "volume": 1
+    },
+    "Digit0": {
+      "keydown": "sounds/keydown-fsharp5.wav",
+      "volume": 1
+    },
+    "KeyA": {
+      "keydown": "sounds/keydown-a2.wav",
+      "volume": 1
+    },
+    "KeyK": {
+      "keydown": "sounds/keydown-c4.wav",
+      "volume": 1
+    },
+    "KeyL": {
+      "keydown": "sounds/keydown-dsharp4.wav",
+      "volume": 1
+    },
+    "Semicolon": {
+      "keydown": "sounds/keydown-dsharp4.wav",
+      "volume": 1
+    },
+    "KeyF": {
+      "keydown": "sounds/keydown-dsharp3.wav",
+      "volume": 1
+    },
+    "Slash": {
+      "keydown": "sounds/keydown-c3.wav",
+      "volume": 1
+    },
+    "Space": {
+      "keydown": "sounds/keydown-space.wav",
+      "volume": 1
+    },
+    "Return": {
+      "keydown": "sounds/keydown-enter.wav",
+      "volume": 1
+    }
+  },
+  "category_overrides": {
+    "modifiers": {
+      "keys": [
+        "ShiftLeft",
+        "ShiftRight",
+        "ControlLeft",
+        "ControlRight",
+        "Alt",
+        "AltGr",
+        "MetaLeft",
+        "MetaRight"
+      ],
+      "keydown": "sounds/keydown-modifier.wav",
+      "volume": 0.4
+    },
+    "delete": {
+      "keys": [
+        "Backspace",
+        "Delete"
+      ],
+      "keydown": "sounds/keydown-backspace.wav"
+    }
+  }
+}

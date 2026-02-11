@@ -17,7 +17,7 @@ KeySound is a Windows desktop application that plays sound effects on every keyp
 
 ### 2. Sound Packs
 
-- 24 bundled packs (HHKB, Piano, Katana, Gunshot, etc.)
+- 24 bundled packs (HHKB, Piano Real, Katana, Gunshot, etc.)
 - Bundled packs sync from app resources to `%APPDATA%/com.keysound.desktop/soundpacks/` on every launch
 - Default pack: HHKB (id: `"default"`, always sorted first)
 - Supported audio formats: mp3, wav, ogg
