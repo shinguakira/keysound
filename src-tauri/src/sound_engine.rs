@@ -4,8 +4,13 @@ use kira::{
 };
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 
 use crate::sound_pack::SoundPack;
+
+/// Minimum interval between repeated sounds for the same key (ms).
+/// Prevents buzzing/crackling when holding a key down.
+const KEY_REPEAT_COOLDOWN_MS: u128 = 80;
 
 /// Convert a linear amplitude (0.0-1.0) to decibels
 fn amplitude_to_db(amplitude: f64) -> f64 {
@@ -26,6 +31,8 @@ pub struct SoundEngine {
     volume: f64,
     /// Whether sound is enabled
     enabled: bool,
+    /// Per-key last play time for repeat throttling
+    last_play: HashMap<String, Instant>,
 }
 
 impl SoundEngine {
@@ -39,12 +46,14 @@ impl SoundEngine {
             active_pack: None,
             volume: 1.0,
             enabled: true,
+            last_play: HashMap::new(),
         })
     }
 
     /// Load a sound pack and pre-load all its sound files
     pub fn load_pack(&mut self, pack: SoundPack) -> Result<(), String> {
         self.sounds.clear();
+        self.last_play.clear();
 
         // Collect all unique sound file paths from the pack
         let mut paths_to_load: Vec<PathBuf> = Vec::new();
@@ -126,10 +135,19 @@ impl SoundEngine {
         Ok(())
     }
 
-    /// Play the sound for a keypress
+    /// Play the sound for a keypress.
+    /// Throttles repeated plays of the same key to avoid buzzing on key hold.
     pub fn play_key(&mut self, key_name: &str) {
         if !self.enabled {
             return;
+        }
+
+        // Per-key cooldown: skip if same key was played too recently
+        let now = Instant::now();
+        if let Some(last) = self.last_play.get(key_name) {
+            if now.duration_since(*last).as_millis() < KEY_REPEAT_COOLDOWN_MS {
+                return;
+            }
         }
 
         let pack = match &self.active_pack {
@@ -156,6 +174,8 @@ impl SoundEngine {
         if let Err(e) = self.manager.play(data_with_volume) {
             log::error!("Failed to play sound: {}", e);
         }
+
+        self.last_play.insert(key_name.to_string(), now);
     }
 
     pub fn set_volume(&mut self, volume: f64) {
